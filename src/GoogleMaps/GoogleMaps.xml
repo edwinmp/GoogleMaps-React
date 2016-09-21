@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<widget id="GoogleMaps.widget.GoogleMaps" needsEntityContext="true" xmlns="http://www.mendix.com/widget/1.0/">
+    <name>GoogleMaps</name>
+    <description>Google Maps</description>
+
+    <icon />
+
+    <properties>
+        <!-- General -->
+        <property key="apiKey" type="string" required="false" defaultValue="">
+            <caption>API Key</caption>
+            <category>General</category>
+            <description>Your google maps api key</description>
+        </property>
+        <!-- Behavior -->
+        <property key="onChangeMicroflow" type="microflow" required="false" defaultValue="">
+            <caption>Microflow</caption>
+            <category>Behavior</category>
+            <description>The microflow to execute on change.</description>
+            <returnType type="Boolean" />
+        </property>
+    </properties>
+</widget>
+

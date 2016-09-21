@@ -69,6 +69,18 @@ module.exports = function (grunt) {
                     "./test/widgets/" + pkg.name + ".mpk"
                 ],
             out : "./out/**/*"                
+        },
+
+        transpile: {
+            main: {
+                type: "amd", // or "cjs" or "yui" 
+                files: [{
+                    expand: true,
+                    cwd: './src/**/lib/src/',
+                    src: ['**/*.js'],
+                    dest: './src/**/lib/'
+                }]
+            }
         }
     });
     
@@ -76,11 +88,12 @@ module.exports = function (grunt) {
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-watch");
     grunt.loadNpmTasks("grunt-contrib-copy");
+    grunt.loadNpmTasks('grunt-es6-module-transpiler');
     grunt.registerTask("default", ["watch"]);
     grunt.registerTask("distribute", ["clean:out", "copy:out", "compress:out", "copy:mpks" ]);
     grunt.registerTask(
             "clean build",
             "Compiles all the assets and copies the files to the build directory.", ["clean:build","compress:makezip", "copy:mpks" ]
             );
-    grunt.registerTask("build", ["clean build"]);
+    grunt.registerTask("build", ["clean build", "transpile"]);
 };
