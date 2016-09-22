@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<widget id="GoogleMaps.widget.GoogleMaps" needsEntityContext="true" xmlns="http://www.mendix.com/widget/1.0/">
+<widget id="GoogleMaps.widget.GoogleMaps" needsEntityContext="true"
+    xmlns="http://www.mendix.com/widget/1.0/"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../../xsd/widget.xsd">
     <name>GoogleMaps</name>
     <description>Google Maps</description>
 
     <icon />
 
     <properties>
-        <!-- General -->
+        <!-- Appearance -->
+        <property key="width" type="integer" required="true" defaultValue="0">
+            <caption>Width</caption>
+            <category>Appearance</category>
+            <description>Map width in px. 0 = 100%</description>
+        </property>
+        <property key="height" type="integer" required="true" defaultValue="0">
+            <caption>Height</caption>
+            <category>Appearance</category>
+            <description>Map height in px. 0 = auto</description>
+        </property>
+        <!-- Google -->
         <property key="apiKey" type="string" required="false" defaultValue="">
             <caption>API Key</caption>
-            <category>General</category>
+            <category>Google</category>
             <description>Your google maps api key</description>
         </property>
         <!-- Behavior -->

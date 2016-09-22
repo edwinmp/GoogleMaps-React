@@ -16,12 +16,6 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "mendix/l
             if (this.readOnly || this.get("disabled")) {
                 this._readOnly = true;
             }
-            this.onChangeEvent = this.onChangeEvent.bind(this);
-            this.callMicroflow = this.callMicroflow.bind(this);
-            this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
-            this.onLibraryLoaded = this.onLibraryLoaded.bind(this);
-            this.onLibraryLoadingError = this.onLibraryLoadingError.bind(this);
-            this.onLibraryLoading = this.onLibraryLoading.bind(this);
             this._updateRendering();
         };
         GoogleMaps.prototype.update = function (obj, callback) {
@@ -32,55 +26,14 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "mendix/l
         };
         GoogleMaps.prototype.uninitialize = function () {
             logger.debug(this.id + ".uninitialize");
+            ReactDOM.unmountComponentAtNode(this.domNode);
         };
         GoogleMaps.prototype._updateRendering = function (callback) {
             logger.debug(this.id + ".updateRendering");
-            var Wrapper = Wrapper_1.default([this.getGoogleMapsApiUrl()]);
             if (this.contextObj !== null && typeof (this.contextObj) !== "undefined") {
-                ReactDOM.render(React.createElement(Wrapper, {isScriptLoading: window.isScriptLoading, isScriptLoaded: window.isScriptLoaded, onScriptLoading: this.onLibraryLoading, onScriptLoaded: this.onLibraryLoaded, onError: this.onLibraryLoadingError}), this.domNode);
+                ReactDOM.render(React.createElement(Wrapper_1.default, { apiKey: this.apiKey, widget: this, width: this.width, height: this.height }), this.domNode);
             }
             mxLang.nullExec(callback);
-        };
-        GoogleMaps.prototype.getGoogleMapsApiUrl = function () {
-            return this.googleMapsApiBaseUrl + "?key=" + this.apiKey + "&libraries=" + this.libraries.join();
-        };
-        GoogleMaps.prototype.onLibraryLoaded = function () {
-            logger.debug(this.id + "... Script Loaded!");
-            if (!window.isScriptLoaded) {
-                window.isScriptLoaded = true;
-                this._updateRendering();
-            }
-        };
-        GoogleMaps.prototype.onLibraryLoading = function () {
-            logger.debug(this.id + "... Script Loading!");
-            window.isScriptLoading = true;
-        };
-        GoogleMaps.prototype.onLibraryLoadingError = function () {
-            logger.debug(this.id + "... Library Loading Failed...");
-            window.isScriptLoaded = false;
-        };
-        GoogleMaps.prototype.onChangeEvent = function (value) {
-            logger.debug(this.id + ".onChangeEvent");
-        };
-        GoogleMaps.prototype.callMicroflow = function (callback) {
-            var _this = this;
-            logger.debug(this.id + ".callMicroflow");
-            mx.data.action({
-                callback: function (obj) {
-                    logger.debug(_this.id + ": Microflow executed successfully");
-                },
-                error: dojoLang.hitch(this, function (error) {
-                    logger.error(_this.id + ": An error occurred while executing microflow: " + error.description);
-                }),
-                params: {
-                    actionname: this.onChangeMicroflow,
-                    applyto: "selection",
-                    guids: [this.contextObj.getGuid()],
-                },
-                store: {
-                    caller: this.mxform,
-                },
-            });
         };
         GoogleMaps.prototype._unsubscribe = function () {
             if (this.handles) {
@@ -106,19 +59,12 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "mendix/l
         };
         return GoogleMaps;
     }(_WidgetBase));
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.default = GoogleMaps;
     var dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], (function (Source) {
         var result = {};
         result.constructor = function () {
             logger.debug(this.id + ".constructor");
-            this.apiKey = "";
-            this.libraries = ["geometry", "places", "visualization", "places"];
-            this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
-            if (typeof window.isScriptLoaded === "undefined") {
-                window.isScriptLoaded = false;
-            }
-            if (typeof window.isScriptLoading === "undefined") {
-                window.isScriptLoading = false;
-            }
         };
         for (var i in Source.prototype) {
             if (i !== "constructor" && Source.prototype.hasOwnProperty(i)) {
@@ -127,5 +73,4 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "mendix/l
         }
         return result;
     }(GoogleMaps)));
-    return GoogleMaps;
 });

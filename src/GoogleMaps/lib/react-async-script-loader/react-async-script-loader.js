@@ -114,14 +114,14 @@ define(["require", "exports", "GoogleMaps/lib/react", "../hoist-non-react-static
                     var props = Object.assign({}, this.props, this.state);
                     return (React.createElement(WrappedComponent, __assign({}, this.props)));
                 };
-                ScriptLoader.propTypes = {
-                    onScriptLoaded: React.PropTypes.func,
-                };
-                ScriptLoader.defaultProps = {
-                    onScriptLoaded: utils_1.noop,
-                };
                 return ScriptLoader;
             }(React.Component));
+            ScriptLoader.propTypes = {
+                onScriptLoaded: React.PropTypes.func,
+            };
+            ScriptLoader.defaultProps = {
+                onScriptLoaded: utils_1.noop,
+            };
             return hoist_non_react_statics_1.default(ScriptLoader, WrappedComponent);
         };
     };

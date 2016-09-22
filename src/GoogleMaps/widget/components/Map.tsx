@@ -21,34 +21,38 @@ const mapStyles = {
   },
 };
 
-interface IMapProps {
-  google: IGoogleMaps;
-  zoom: number;
-  centerAroundCurrentLocation: boolean;
-  center: Object;
-  initialCenter: {
+interface ILatLng {
     lat: number;
     lng: number;
-  };
-  className: string;
-  style: Object;
-  containerStyle: Object;
-  visible: boolean;
+  }
+interface IMapProps extends React.Props<Map> {
+  google: {};
+  zoom?: number;
+  centerAroundCurrentLocation?: boolean;
+  center?: google.maps.LatLng;
+  initialCenter?: google.maps.LatLng;
+  className?: string;
+  style?: Object;
+  containerStyle?: Object;
+  visible?: boolean;
+  [key: string]: any;
 }
 
 interface IMapState {
-  currentLocation: {
-        lat?: number;
-        lng?: number;
-      };
+  currentLocation: google.maps.LatLng;
 }
 
-interface IGoogleMaps {
+interface IGoogle {
   maps: {
-    Map: google.maps.Map;
-    event: google.maps.event;
-  };
+      event: google.maps.event;
+      LatLng: google.maps.LatLng;
+      Map: google.maps.Map;
+    };
 }
+
+interface IMapArray extends Array<google.maps.MapsEventListener> {
+  [key: string]: any;
+};
 
 const evtNames = ["ready", "click", "dragend", "recenter"];
 
@@ -65,44 +69,42 @@ export default class Map extends React.Component<IMapProps, IMapState> {
    * @type {IMapProps}
    * @memberOf Map
    */
-  private static defaultProps: IMapProps = {
-    center: {},
+  public static defaultProps: IMapProps = {
     centerAroundCurrentLocation: false,
     className: "",
     containerStyle: {},
     google: null,
-    initialCenter: {
-      lat: 37.774929,
-      lng: -122.419416,
-    },
+    initialCenter: typeof google !== "undefined" ? new google.maps.LatLng(37.774929, -122.419416) : null,
     style: {},
     visible: true,
     zoom: 14,
   };
-  private listeners: google.maps.MapsEventListener[];
+  private listeners: IMapArray; // used to manage the map event listeners
   private geoPromise: dojo.Deferred;
+  private mapRef: HTMLElement;
+  private map: google.maps.Map;
+  private loggerNode: string;
 
   constructor(props: IMapProps) {
     super(props);
-    logger.debug("Map" + ".constructor");
+    this.loggerNode = "Map";
+    logger.debug(this.loggerNode + ".constructor");
 
-    if (!props.hasOwnProperty("google") || props.google == null) {
-      logger.debug("Map" + ".You must include a 'googpe' prop");
-      throw new Error("You must include a `google` prop.");
+    if (!props.hasOwnProperty("google") || props.google === null) {
+      logger.debug(this.loggerNode + ".You must include a 'google' prop & it must not be null");
     }
 
     this.listeners = [];
     this.state = {
-      currentLocation: {
-        lat: this.props.initialCenter.lat,
-        lng: this.props.initialCenter.lng,
-      },
+      currentLocation: new google.maps.LatLng(props.initialCenter.lat(), props.initialCenter.lng()),
     };
   }
-
   public componentDidMount() {
+    logger.debug(this.loggerNode + ".componentDidMount");
+    // If user wants to see his location, fetch and set it as map's current location
     if (this.props.centerAroundCurrentLocation) {
       if (navigator && navigator.geolocation) {
+        // TODO: Check if dojoDeferred works as an alternative to es6 Promise
         this.geoPromise = new dojoDeferred((resolve: PositionCallback, reject: PositionErrorCallback) => {
           navigator.geolocation.getCurrentPosition(resolve, reject);
         });
@@ -110,10 +112,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
         this.geoPromise.promise.then(pos => {
           const coords = pos.coords;
           this.setState({
-            currentLocation: {
-              lat: coords.latitude,
-              lng: coords.longitude,
-            },
+            currentLocation: new google.maps.LatLng(coords.latitude, coords.longitude),
           });
         }, error => error);
       }
@@ -122,12 +121,14 @@ export default class Map extends React.Component<IMapProps, IMapState> {
   }
 
   public componentDidUpdate(prevProps: IMapProps, prevState: IMapState) {
+    logger.debug(this.loggerNode + ".componentDidUpdate");
     if (prevProps.google !== this.props.google) {
       this.loadMap();
     }
     if (this.props.visible !== prevProps.visible) {
       this.restyleMap();
     }
+    // if the location coordinates have changed, update state
     if (this.props.center !== prevProps.center) {
       this.setState({
         currentLocation: this.props.center,
@@ -139,45 +140,45 @@ export default class Map extends React.Component<IMapProps, IMapState> {
   }
 
   public componentWillUnmount() {
-    const {google} = this.props;
+    logger.debug(this.loggerNode + ".componentWillUnmount");
     if (this.geoPromise) {
       this.geoPromise.cancel("Component is unmounting!", false);
     }
-    Object.keys(this.listeners).forEach(e => {
+    Object.keys(this.listeners).forEach((e: string) => {
       google.maps.event.removeListener(this.listeners[e]);
     });
   }
   public render() {
+    logger.debug(this.loggerNode + ".render");
     const style = Object.assign({}, mapStyles.map, this.props.style, {
       display: this.props.visible ? "inherit" : "none",
     });
 
-    const containerStyles = Object.assign({},
-      mapStyles.container, this.props.containerStyle);
+    const containerStyles = Object.assign({}, mapStyles.container, this.props.containerStyle);
 
     return (
       <div style={containerStyles} className={this.props.className}>
-        <div style={style} ref="map">
+        <div style={style} ref={ (c) => this.mapRef = c }>
           Loading map...
         </div>
-        {this.renderChildren() }
+        {this.renderChildren()}
       </div>
     );
   }
   private loadMap() {
+    logger.debug(this.loggerNode + ".loadMap");
     if (this.props && this.props.google) {
-      const {google} = this.props;
       const maps = google.maps;
 
-      const mapRef = this.refs.map;
+      const mapRef = this.mapRef;
       const node = ReactDOM.findDOMNode(mapRef);
       const curr = this.state.currentLocation;
-      let center = new maps.LatLng(curr.lat, curr.lng);
+      let center = new google.maps.LatLng(curr.lat(), curr.lng());
 
       let mapConfig = Object.assign({}, {
         center,
         zoom: this.props.zoom,
-      });
+      }) as google.maps.MapOptions;
 
       this.map = new maps.Map(node, mapConfig);
 
@@ -206,8 +207,9 @@ export default class Map extends React.Component<IMapProps, IMapState> {
       });
   }
 
-  private handleEvent(evtName) {
-    let timeout;
+  private handleEvent(evtName: string) {
+    logger.debug(this.loggerNode + ".handleEvent");
+    let timeout: number;
     const handlerName = `on${this.camelize(evtName)}`;
 
     return (e) => {
@@ -224,37 +226,42 @@ export default class Map extends React.Component<IMapProps, IMapState> {
   }
 
   private recenterMap() {
+    logger.debug(this.loggerNode + ".recenterMap");
     const map = this.map;
-
-    const {google} = this.props;
+    if (!this.props.google) { return; };
     const maps = google.maps;
-
-    if (!google) { return; };
 
     if (map) {
       let center = this.state.currentLocation;
       if (!(center instanceof google.maps.LatLng)) {
-        center = new google.maps.LatLng(center.lat, center.lng);
+        center = new google.maps.LatLng(center.lat(), center.lng());
       }
       // map.panTo(center)
       map.setCenter(center);
       maps.event.trigger(map, "recenter");
     }
   }
-
+  /**
+   * Resizes the map
+   * 
+   * @private
+   * 
+   * @memberOf Map
+   */
   private restyleMap() {
+    logger.debug(this.loggerNode + ".restyleMap");
     if (this.map) {
-      const {google} = this.props;
       google.maps.event.trigger(this.map, "resize");
     }
   }
 
   private renderChildren() {
+    logger.debug(this.loggerNode + ".renderChildren");
     const {children} = this.props;
 
     if (!children) { return; };
 
-    return React.Children.map(children, c => {
+    return React.Children.map(children, (c) => {
       return React.cloneElement(c, {
         google: this.props.google,
         map: this.map,

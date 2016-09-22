@@ -19,26 +19,25 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             top: 0,
         },
     };
+    ;
     var evtNames = ["ready", "click", "dragend", "recenter"];
     var Map = (function (_super) {
         __extends(Map, _super);
         function Map(props) {
             _super.call(this, props);
-            logger.debug("Map" + ".constructor");
-            if (!props.hasOwnProperty("google") || props.google == null) {
-                logger.debug("Map" + ".You must include a 'googpe' prop");
-                throw new Error("You must include a `google` prop.");
+            this.loggerNode = "Map";
+            logger.debug(this.loggerNode + ".constructor");
+            if (!props.hasOwnProperty("google") || props.google === null) {
+                logger.debug(this.loggerNode + ".You must include a 'google' prop & it must not be null");
             }
             this.listeners = [];
             this.state = {
-                currentLocation: {
-                    lat: this.props.initialCenter.lat,
-                    lng: this.props.initialCenter.lng,
-                },
+                currentLocation: new google.maps.LatLng(props.initialCenter.lat(), props.initialCenter.lng()),
             };
         }
         Map.prototype.componentDidMount = function () {
             var _this = this;
+            logger.debug(this.loggerNode + ".componentDidMount");
             if (this.props.centerAroundCurrentLocation) {
                 if (navigator && navigator.geolocation) {
                     this.geoPromise = new dojoDeferred(function (resolve, reject) {
@@ -47,10 +46,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                     this.geoPromise.promise.then(function (pos) {
                         var coords = pos.coords;
                         _this.setState({
-                            currentLocation: {
-                                lat: coords.latitude,
-                                lng: coords.longitude,
-                            },
+                            currentLocation: new google.maps.LatLng(coords.latitude, coords.longitude),
                         });
                     }, function (error) { return error; });
                 }
@@ -58,6 +54,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             this.loadMap();
         };
         Map.prototype.componentDidUpdate = function (prevProps, prevState) {
+            logger.debug(this.loggerNode + ".componentDidUpdate");
             if (prevProps.google !== this.props.google) {
                 this.loadMap();
             }
@@ -75,7 +72,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
         };
         Map.prototype.componentWillUnmount = function () {
             var _this = this;
-            var google = this.props.google;
+            logger.debug(this.loggerNode + ".componentWillUnmount");
             if (this.geoPromise) {
                 this.geoPromise.cancel("Component is unmounting!", false);
             }
@@ -84,21 +81,25 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             });
         };
         Map.prototype.render = function () {
+            var _this = this;
+            logger.debug(this.loggerNode + ".render");
             var style = Object.assign({}, mapStyles.map, this.props.style, {
                 display: this.props.visible ? "inherit" : "none",
             });
             var containerStyles = Object.assign({}, mapStyles.container, this.props.containerStyle);
-            return (React.createElement("div", {style: containerStyles, className: this.props.className}, React.createElement("div", {style: style, ref: "map"}, "Loading map..."), this.renderChildren()));
+            return (React.createElement("div", { style: containerStyles, className: this.props.className },
+                React.createElement("div", { style: style, ref: function (c) { return _this.mapRef = c; } }, "Loading map..."),
+                this.renderChildren()));
         };
         Map.prototype.loadMap = function () {
             var _this = this;
+            logger.debug(this.loggerNode + ".loadMap");
             if (this.props && this.props.google) {
-                var google_1 = this.props.google;
-                var maps = google_1.maps;
-                var mapRef = this.refs.map;
+                var maps = google.maps;
+                var mapRef = this.mapRef;
                 var node = ReactDOM.findDOMNode(mapRef);
                 var curr = this.state.currentLocation;
-                var center = new maps.LatLng(curr.lat, curr.lng);
+                var center = new google.maps.LatLng(curr.lat(), curr.lng());
                 var mapConfig = Object.assign({}, {
                     center: center,
                     zoom: this.props.zoom,
@@ -121,6 +122,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
         };
         Map.prototype.handleEvent = function (evtName) {
             var _this = this;
+            logger.debug(this.loggerNode + ".handleEvent");
             var timeout;
             var handlerName = "on" + this.camelize(evtName);
             return function (e) {
@@ -136,30 +138,31 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             };
         };
         Map.prototype.recenterMap = function () {
+            logger.debug(this.loggerNode + ".recenterMap");
             var map = this.map;
-            var google = this.props.google;
-            var maps = google.maps;
-            if (!google) {
+            if (!this.props.google) {
                 return;
             }
             ;
+            var maps = google.maps;
             if (map) {
                 var center = this.state.currentLocation;
                 if (!(center instanceof google.maps.LatLng)) {
-                    center = new google.maps.LatLng(center.lat, center.lng);
+                    center = new google.maps.LatLng(center.lat(), center.lng());
                 }
                 map.setCenter(center);
                 maps.event.trigger(map, "recenter");
             }
         };
         Map.prototype.restyleMap = function () {
+            logger.debug(this.loggerNode + ".restyleMap");
             if (this.map) {
-                var google_2 = this.props.google;
-                google_2.maps.event.trigger(this.map, "resize");
+                google.maps.event.trigger(this.map, "resize");
             }
         };
         Map.prototype.renderChildren = function () {
             var _this = this;
+            logger.debug(this.loggerNode + ".renderChildren");
             var children = this.props.children;
             if (!children) {
                 return;
@@ -173,23 +176,19 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                 });
             });
         };
-        Map.defaultProps = {
-            center: {},
-            centerAroundCurrentLocation: false,
-            className: "",
-            containerStyle: {},
-            google: null,
-            initialCenter: {
-                lat: 37.774929,
-                lng: -122.419416,
-            },
-            style: {},
-            visible: true,
-            zoom: 14,
-        };
         return Map;
     }(React.Component));
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Map;
+    Map.defaultProps = {
+        centerAroundCurrentLocation: false,
+        className: "",
+        containerStyle: {},
+        google: null,
+        initialCenter: typeof google !== "undefined" ? new google.maps.LatLng(37.774929, -122.419416) : null,
+        style: {},
+        visible: true,
+        zoom: 14,
+    };
     ;
 });

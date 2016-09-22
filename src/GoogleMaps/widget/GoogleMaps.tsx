@@ -28,30 +28,28 @@ import * as _WidgetBase from  "mxui/widget/_WidgetBase";
 import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
-// import * as makeCancelable from "GoogleMaps/lib/cancelablePromise";
-// import * as GoogleApi from "GoogleMaps/lib/GoogleApi";
-// import * as ScriptCache from "GoogleMaps/lib/ScriptCache";
-
 // import components
-import GetWrapper from "./components/Wrapper";
+import Wrapper from "./components/Wrapper";
 
 // interface extensions
-interface IMapsWindow extends Window {
-    isScriptLoaded: boolean;
-    isScriptLoading: boolean;
+export interface IMapsWindow extends Window {
+    // Use this to extend the Window global with your own properties
 }
 
-class GoogleMaps extends _WidgetBase {
-    // Parameters configured in the Modeler
-    private onChangeMicroflow: string;
+export default class GoogleMaps extends _WidgetBase {
+    /**
+     * Parameters configured in the Modeler
+     *
+     * @memberOf GoogleMaps
+     */
+    private width: number;
+    private height: number;
     private apiKey: string;
 
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;
     private handles: any[];
     private _readOnly: boolean;
-    private libraries: string[];
-    private googleMapsApiBaseUrl: string;
 
     // The TypeScript Contructor, not the dojo consctuctor, move contructor work into widget prototype at bottom of the page. 
     constructor(args?: Object, elem?: HTMLElement) {
@@ -66,13 +64,6 @@ class GoogleMaps extends _WidgetBase {
         if (this.readOnly || this.get("disabled")) {
             this._readOnly = true;
         }
-        // hitch context to all callbacks
-        this.onChangeEvent = this.onChangeEvent.bind(this);
-        this.callMicroflow = this.callMicroflow.bind(this);
-        this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
-        this.onLibraryLoaded = this.onLibraryLoaded.bind(this);
-        this.onLibraryLoadingError = this.onLibraryLoadingError.bind(this);
-        this.onLibraryLoading = this.onLibraryLoading.bind(this);
 
         this._updateRendering();
     }
@@ -88,96 +79,25 @@ class GoogleMaps extends _WidgetBase {
     public uninitialize() {
         logger.debug(this.id + ".uninitialize");
         // Clean up listeners, helper objects, etc. There is no need to remove listeners added with this.connect / this.subscribe / this.own.  
+        ReactDOM.unmountComponentAtNode(this.domNode);
     }
     // Render the widget interface.
     private _updateRendering (callback?: Function) {
         logger.debug(this.id + ".updateRendering");
-        const Wrapper = GetWrapper([this.getGoogleMapsApiUrl()]);
         if (this.contextObj !== null && typeof(this.contextObj) !== "undefined") {
+            // Render react component
             ReactDOM.render(
-                // Component goes here, this.domNode
                 <Wrapper
-                    isScriptLoading={window.isScriptLoading}
-                    isScriptLoaded={window.isScriptLoaded}
-                    onScriptLoading={this.onLibraryLoading}
-                    onScriptLoaded={this.onLibraryLoaded}
-                    onError={this.onLibraryLoadingError}
+                    apiKey={this.apiKey}
+                    widget={this}
+                    width={this.width}
+                    height={this.height}
                 />,
                 this.domNode
             );
         }
         // The callback, coming from update, needs to be executed, to let the page know it finished rendering
         mxLang.nullExec(callback);
-    }
-    private getGoogleMapsApiUrl() {
-        return `${this.googleMapsApiBaseUrl}?key=${this.apiKey}&libraries=${this.libraries.join()}`;
-    }
-    /**
-     * Called when google Maps API script is successfully loaded
-     * 
-     * @private
-     * 
-     * @memberOf GoogleMaps
-     */
-    private onLibraryLoaded() {
-        logger.debug(this.id + "... Script Loaded!");
-        if (!window.isScriptLoaded) {
-            window.isScriptLoaded = true;
-            this._updateRendering();
-        }
-    }
-    /**
-     * Called when google Maps API script is loading
-     * 
-     * @private
-     * 
-     * @memberOf GoogleMaps
-     */
-    private onLibraryLoading() {
-        logger.debug(this.id + "... Script Loading!");
-        window.isScriptLoading = true;
-    }
-    /**
-     * Called when google Maps API script failes to load
-     * 
-     * @private
-     * 
-     * @memberOf GoogleMaps
-     */
-    private onLibraryLoadingError() {
-        logger.debug(this.id + "... Library Loading Failed...");
-        window.isScriptLoaded = false;
-    }
-    /**
-     * Called when a change occurs
-     * 
-     * @private
-     * @param {string} value
-     * 
-     * @memberOf GoogleMaps
-     */
-    private onChangeEvent(value: string) {
-        logger.debug(this.id + ".onChangeEvent");
-    }
-    // call the microflow and remove progress on finishing
-    private callMicroflow(callback?: Function) {
-        logger.debug(this.id + ".callMicroflow");
-        mx.data.action({
-            callback: (obj: mendix.lib.MxObject) => {
-                logger.debug(this.id + ": Microflow executed successfully");
-            },
-            error: dojoLang.hitch(this, (error) => {
-                logger.error(this.id + ": An error occurred while executing microflow: " + error.description);
-            }),
-            params: {
-                actionname: this.onChangeMicroflow,
-                applyto: "selection",
-                guids: [ this.contextObj.getGuid() ],
-            },
-            store: {
-                caller: this.mxform,
-            },
-        });
     }
     // Remove subscriptions
     private _unsubscribe () {
@@ -223,16 +143,6 @@ let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], 
     // Implement to initialize non-primitive properties.
     result.constructor = function() {
         logger.debug( this.id + ".constructor");
-        this.apiKey = "";
-        this.libraries = ["geometry", "places", "visualization", "places"];
-        this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
-
-        if (typeof window.isScriptLoaded === "undefined") {
-            window.isScriptLoaded = false;
-        }
-        if (typeof window.isScriptLoading === "undefined") {
-            window.isScriptLoading = false;
-        }
     };
     for (let i in Source.prototype) {
         if (i !== "constructor" && Source.prototype.hasOwnProperty(i)) {
@@ -241,6 +151,4 @@ let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], 
     }
     return result;
 } (GoogleMaps)));
-
-export = GoogleMaps;
 
