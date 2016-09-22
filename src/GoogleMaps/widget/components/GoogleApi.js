@@ -39,10 +39,11 @@ define(["require", "exports", "GoogleMaps/lib/react", "../../lib/react-async-scr
         GoogleApi.prototype.getContent = function () {
             logger.debug(this.loggerNode + ".getContent");
             var mapProps = {
-                centerAroundCurrentLocation: false,
+                centerAroundCurrentLocation: true,
             };
             if (this.props.isScriptLoaded) {
-                return (React.createElement(Map_1.default, __assign({}, mapProps, { google: google })));
+                var initialCenter = new google.maps.LatLng(37.774929, -122.419416);
+                return (React.createElement(Map_1.default, __assign({}, mapProps, { google: google, initialCenter: initialCenter })));
             }
             else {
                 return (React.createElement("div", null, "Loading ..."));

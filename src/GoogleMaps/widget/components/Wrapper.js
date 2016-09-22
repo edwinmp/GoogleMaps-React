@@ -21,7 +21,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "./GoogleApi"], function (
             this.libraries = ["geometry", "places", "visualization", "places"];
             this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
             this.loggerNode = "Wrapper";
-            this.isScriptLoading = true;
+            this.isScriptLoading = false;
             if (typeof google === "undefined") {
                 this.google = null;
             }
@@ -49,7 +49,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "./GoogleApi"], function (
         Wrapper.prototype.getContent = function () {
             logger.debug(this.loggerNode + ".getContent");
             var GoogleComponent = GoogleApi_1.default([this.getGoogleMapsApiUrl()]);
-            if (this.isScriptLoading || this.state.isScriptLoaded) {
+            if (!this.isScriptLoading || this.state.isScriptLoaded) {
                 return (React.createElement(GoogleComponent, __assign({}, this.props, { onScriptLoaded: this.onLibraryLoaded, isScriptLoaded: this.state.isScriptLoaded, isScriptLoading: this.isScriptLoading, onScriptLoading: this.onLibraryLoading, onScriptLoadingError: this.onLibraryLoadingError })));
             }
             return null;

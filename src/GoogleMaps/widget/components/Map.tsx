@@ -74,7 +74,6 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     className: "",
     containerStyle: {},
     google: null,
-    initialCenter: typeof google !== "undefined" ? new google.maps.LatLng(37.774929, -122.419416) : null,
     style: {},
     visible: true,
     zoom: 14,

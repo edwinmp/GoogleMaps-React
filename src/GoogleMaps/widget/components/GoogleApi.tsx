@@ -1,5 +1,4 @@
 declare var logger: mendix.logger;
-declare var google: Object;
 declare var mx: mx.mx;
 // declare var window: IMapsWindow;
 // import dependencies
@@ -55,13 +54,15 @@ class GoogleApi extends React.Component<IGoogleApiProps, {}> {
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
         const mapProps = {
-            centerAroundCurrentLocation: false,
+            centerAroundCurrentLocation: true,
         };
         if (this.props.isScriptLoaded) {
+            const initialCenter = new google.maps.LatLng(37.774929, -122.419416);
             return (
                 <Map
                     {...mapProps}
                     google={google}
+                    initialCenter={initialCenter}
                 />
             );
         } else {

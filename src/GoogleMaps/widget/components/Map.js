@@ -185,7 +185,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
         className: "",
         containerStyle: {},
         google: null,
-        initialCenter: typeof google !== "undefined" ? new google.maps.LatLng(37.774929, -122.419416) : null,
         style: {},
         visible: true,
         zoom: 14,

@@ -46,7 +46,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
         this.libraries = ["geometry", "places", "visualization", "places"];
         this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
         this.loggerNode = "Wrapper";
-        this.isScriptLoading = true;
+        this.isScriptLoading = false;
         if (typeof google === "undefined") {
             this.google = null;
         }
@@ -79,7 +79,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
         const GoogleComponent = GoogleApi([this.getGoogleMapsApiUrl()]);
-        if (this.isScriptLoading || this.state.isScriptLoaded) {
+        if (!this.isScriptLoading || this.state.isScriptLoaded) {
             return (
                 <GoogleComponent
                     {...this.props}
