@@ -1,6 +1,7 @@
 
 declare var logger: mendix.logger;
 
+import autoBind from "../../lib/autoBind";
 import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
@@ -36,6 +37,7 @@ interface IMapProps extends React.Props<Map> {
   containerStyle?: Object;
   visible?: boolean;
   [key: string]: any;
+  widget: mxui.widget._WidgetBase;
 }
 
 interface IMapState {
@@ -76,6 +78,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     google: null,
     style: {},
     visible: true,
+    widget: null,
     zoom: 14,
   };
   private listeners: IMapArray; // used to manage the map event listeners
@@ -86,7 +89,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
 
   constructor(props: IMapProps) {
     super(props);
-    this.loggerNode = "Map";
+    this.loggerNode = this.props.widget.id + ".Map";
     logger.debug(this.loggerNode + ".constructor");
 
     if (!props.hasOwnProperty("google") || props.google === null) {

@@ -29,7 +29,7 @@ import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 // import components
-import Wrapper from "./components/Wrapper";
+import Wrapper, { IMapBehaviour } from "./components/Wrapper";
 
 // interface extensions
 export interface IMapsWindow extends Window {
@@ -42,14 +42,19 @@ export default class GoogleMaps extends _WidgetBase {
      *
      * @memberOf GoogleMaps
      */
-    private width: number;
-    private height: number;
-    private apiKey: string;
+    // Appearance
+    private mapHeight: number;
+    private mapWidth: number;
+    // Behaviour
+    private apiAccessKey: string;
+    private defaultLat: string;
+    private defaultLng: string;
 
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;
     private handles: any[];
     private _readOnly: boolean;
+    private behaviour: IMapBehaviour;
 
     // The TypeScript Contructor, not the dojo consctuctor, move contructor work into widget prototype at bottom of the page. 
     constructor(args?: Object, elem?: HTMLElement) {
@@ -60,10 +65,11 @@ export default class GoogleMaps extends _WidgetBase {
     // dijit._WidgetBase.postCreate is called after constructing the widget. Implement to do extra setup work.
     public postCreate() {
         logger.debug(this.id + ".postCreate");
-
-        if (this.readOnly || this.get("disabled")) {
-            this._readOnly = true;
-        }
+        // initialize widget component props
+        this.behaviour = {
+            defaultLat: this.defaultLat,
+            defaultLng: this.defaultLng,
+        };
 
         this._updateRendering();
     }
@@ -88,10 +94,11 @@ export default class GoogleMaps extends _WidgetBase {
             // Render react component
             ReactDOM.render(
                 <Wrapper
-                    apiKey={this.apiKey}
+                    apiKey={this.apiAccessKey}
+                    behaviour={this.behaviour}
                     widget={this}
-                    width={this.width}
-                    height={this.height}
+                    width={this.mapWidth}
+                    height={this.mapHeight}
                 />,
                 this.domNode
             );

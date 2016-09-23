@@ -3,17 +3,15 @@ declare var google: Object;
 declare var mx: mx.mx;
 // declare var window: IMapsWindow;
 // import dependencies
+import autoBind from "../../lib/autoBind";
 import * as React from "GoogleMaps/lib/react";
 
 // import components
 import GoogleApi from "./GoogleApi";
 
-// interface IMapsWindow extends Window {
-//     isScriptLoaded: boolean;
-//     isScriptLoading: boolean;
-// }
 interface IWrapperProps {
     apiKey: string;
+    behaviour: IMapBehaviour;
     height: number;
     widget: mxui.widget._WidgetBase;
     width: number;
@@ -26,9 +24,15 @@ interface IAlert {
     hasAlert: boolean;
     alertText?: string;
 }
+export interface IMapBehaviour {
+    defaultLat?: string;
+    defaultLng?: string;
+}
+
 export default class Wrapper extends React.Component<IWrapperProps, IWrapperState> {
     public static defaultProps: IWrapperProps = {
         apiKey: "",
+        behaviour: {},
         height: 0,
         widget: null,
         width: 0,
@@ -40,12 +44,12 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
     private loggerNode: string;
 
     public constructor(props: IWrapperProps) {
-        logger.debug("Wrapper" + ".constructor");
         super(props);
+        this.loggerNode = this.props.widget.id + ".Wrapper";
+        logger.debug(this.loggerNode + ".constructor");
         // instatiate class variables
         this.libraries = ["geometry", "places", "visualization", "places"];
         this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
-        this.loggerNode = "Wrapper";
         this.isScriptLoading = false;
         if (typeof google === "undefined") {
             this.google = null;
@@ -56,11 +60,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
             isScriptLoaded: false,
         };
         // bind context TODO: Use Autobind
-        this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
-        this.onLibraryLoaded = this.onLibraryLoaded.bind(this);
-        this.onLibraryLoadingError = this.onLibraryLoadingError.bind(this);
-        this.onLibraryLoading = this.onLibraryLoading.bind(this);
-        this.alertDiv = this.alertDiv.bind(this);
+        autoBind(this);
     }
     public render() {
         logger.debug(this.loggerNode + ".render");
@@ -116,7 +116,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
      * @memberOf GoogleMaps
      */
     private onLibraryLoaded() {
-        logger.debug(this.loggerNode + "... Script Loaded!");
+        logger.debug(this.loggerNode + ".onLibraryLoaded");
         if (!this.state.isScriptLoaded && google) {
             // window.isScriptLoaded = true;
             this.google = google;
@@ -138,7 +138,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
      * @memberOf GoogleMaps
      */
     private onLibraryLoading() {
-        logger.debug(this.loggerNode + "... Script Loading!");
+        logger.debug(this.loggerNode + ".onLibraryLoading");
         this.isScriptLoading = true;
     }
     /**
@@ -149,7 +149,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
      * @memberOf GoogleMaps
      */
     private onLibraryLoadingError() {
-        logger.debug(this.loggerNode + "... Library Loading Failed!");
+        logger.debug(this.loggerNode + ".onLibraryLoadingError");
         this.setState({
             alert: {
                 alertText: "Failed to load google maps script ... please check your internet connection",

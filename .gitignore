@@ -96,3 +96,7 @@ test/theme/
 test/userlib/
 test/.classpath
 test/.project
+
+# Typescript generated .js files
+src/GoogleMaps/lib/autoBind.js
+src/GoogleMaps/widget/*.js
