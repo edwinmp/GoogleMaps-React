@@ -22,6 +22,7 @@ declare var window: IMapsWindow;
 // import dependent modules
 import * as dojoDeclare from "dojo/_base/declare";
 import * as dojoLang from "dojo/_base/lang";
+import * as domStyle from "dojo/dom-style";
 import * as mxLang from "mendix/lang";
 import * as _WidgetBase from  "mxui/widget/_WidgetBase";
 
@@ -65,6 +66,12 @@ export default class GoogleMaps extends _WidgetBase {
     // dijit._WidgetBase.postCreate is called after constructing the widget. Implement to do extra setup work.
     public postCreate() {
         logger.debug(this.id + ".postCreate");
+        // set widget dimensions
+        domStyle.set(this.domNode, {
+            height: this.mapHeight !== 0 ? this.mapHeight + "px" : "auto",
+            position: "relative", // required to contain map width
+            width: this.mapWidth !== 0 ? this.mapWidth + "px" : "100%",
+        });
         // initialize widget component props
         this.behaviour = {
             defaultLat: this.defaultLat,

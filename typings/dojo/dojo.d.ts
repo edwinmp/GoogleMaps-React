@@ -19429,7 +19429,7 @@ declare module dojo {
          * @param name             
          * @param value               Optional            
          */
-        set(node: HTMLElement, name: Object, value: String): any;
+        set(node: HTMLElement, name: Object, value?: String): any;
         /**
          * 
          * @param node             
