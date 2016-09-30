@@ -170,7 +170,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
         this.isScriptLoading = true;
     }
     /**
-     * Called when google Maps API script failes to load
+     * Called when google Maps API script fails to load
      * 
      * @private
      * 

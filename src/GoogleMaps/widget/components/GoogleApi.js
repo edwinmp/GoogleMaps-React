@@ -20,19 +20,18 @@ define(["require", "exports", "GoogleMaps/lib/react", "../../lib/react-async-scr
             this.loggerNode = this.props.widget.id + ".GoogleApi";
             logger.debug(this.loggerNode + ".constructor");
         }
-        GoogleApi.prototype.componentWillReceiveProps = function (_a) {
-            var isScriptLoading = _a.isScriptLoading, isScriptLoaded = _a.isScriptLoaded, onScriptLoading = _a.onScriptLoading, onScriptLoadingError = _a.onScriptLoadingError;
+        GoogleApi.prototype.componentWillReceiveProps = function (nextProps) {
             logger.debug(this.loggerNode + ".componentWillReceiveProps");
-            if (isScriptLoading) {
-                if (!isScriptLoaded) {
-                    onScriptLoadingError();
+            if (nextProps.isScriptLoading) {
+                if (!nextProps.isScriptLoaded) {
+                    nextProps.onScriptLoadingError();
                 }
             }
             else {
-                onScriptLoading();
+                nextProps.onScriptLoading();
             }
         };
-        GoogleApi.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+        GoogleApi.prototype.shouldComponentUpdate = function (nextProps) {
             logger.debug(this.loggerNode + ".shouldComponentUpdate");
             return nextProps.isScriptLoaded !== this.props.isScriptLoaded;
         };
@@ -62,7 +61,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "../../lib/react-async-scr
         };
         return GoogleApi;
     }(React.Component));
-    ;
     function GetMap(scripts) {
         return react_async_script_loader_1.default(scripts)(GoogleApi);
     }

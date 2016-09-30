@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom", "dojo/Deferred"], function (require, exports, React, ReactDOM, dojoDeferred) {
+define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom", "../utils/Polyfils", "dojo/Deferred"], function (require, exports, React, ReactDOM, Polyfils_1, dojoDeferred) {
     "use strict";
     var mapStyles = {
         container: {
@@ -19,7 +19,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             top: 0,
         },
     };
-    ;
     var evtNames = ["ready", "click", "dragend", "center_changed"];
     var Map = (function (_super) {
         __extends(Map, _super);
@@ -80,8 +79,8 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
         Map.prototype.render = function () {
             var _this = this;
             logger.debug(this.loggerNode + ".render");
-            var style = Object.assign({}, mapStyles.map, this.props.style);
-            var containerStyles = Object.assign({}, mapStyles.container, this.props.containerStyle);
+            var style = Polyfils_1.ObjectAssign({}, mapStyles.map, this.props.style);
+            var containerStyles = Polyfils_1.ObjectAssign({}, mapStyles.container, this.props.containerStyle);
             return (React.createElement("div", {style: containerStyles, className: this.props.className}, 
                 React.createElement("div", {style: style, ref: function (c) { return _this.mapRef = c; }}, "Loading map..."), 
                 this.renderChildren()));
@@ -95,7 +94,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                 var node = ReactDOM.findDOMNode(mapRef);
                 var curr = this.state.currentLocation;
                 var center = new google.maps.LatLng(curr.lat(), curr.lng());
-                var mapConfig = Object.assign({}, {
+                var mapConfig = Polyfils_1.ObjectAssign({}, {
                     center: center,
                     zoom: this.props.zoom,
                 });
@@ -138,7 +137,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             if (!this.props.google) {
                 return;
             }
-            ;
             var maps = google.maps;
             if (map) {
                 var center = this.state.currentLocation;
@@ -153,7 +151,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             if (!children) {
                 return;
             }
-            ;
             return React.Children.map(children, function (c) {
                 return React.cloneElement(c, {
                     google: _this.props.google,

@@ -33,17 +33,17 @@ class GoogleApi extends React.Component<IGoogleApiProps, {}> {
         this.loggerNode = this.props.widget.id + ".GoogleApi";
         logger.debug(this.loggerNode + ".constructor");
     }
-    public componentWillReceiveProps ({ isScriptLoading, isScriptLoaded, onScriptLoading, onScriptLoadingError }) {
+    public componentWillReceiveProps (nextProps: IGoogleApiProps) {
             logger.debug(this.loggerNode + ".componentWillReceiveProps");
-            if (isScriptLoading) {
-                if (!isScriptLoaded) {
-                    onScriptLoadingError();
+            if (nextProps.isScriptLoading) {
+                if (!nextProps.isScriptLoaded) {
+                    nextProps.onScriptLoadingError();
                 }
             } else {
-                onScriptLoading();
+                nextProps.onScriptLoading();
             }
     }
-    public shouldComponentUpdate(nextProps: IGoogleApiProps, nextState: {}) {
+    public shouldComponentUpdate(nextProps: IGoogleApiProps) {
         logger.debug(this.loggerNode + ".shouldComponentUpdate");
         return nextProps.isScriptLoaded !== this.props.isScriptLoaded;
     }
@@ -79,7 +79,7 @@ class GoogleApi extends React.Component<IGoogleApiProps, {}> {
             );
         }
     }
-};
+}
 
 export default function GetMap(scripts: Array<string>) {
     return scriptLoader(

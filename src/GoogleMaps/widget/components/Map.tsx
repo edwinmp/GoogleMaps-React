@@ -4,6 +4,9 @@ declare var logger: mendix.logger;
 import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
+// import Utilities
+import {ObjectAssign} from "../utils/Polyfils";
+
 import * as dojoDeferred from "dojo/Deferred";
 
 const mapStyles = {
@@ -48,7 +51,7 @@ interface IMapState {
 
 interface IMapArray extends Array<google.maps.MapsEventListener> {
   [key: string]: any;
-};
+}
 
 const evtNames = ["ready", "click", "dragend", "center_changed"];
 
@@ -166,9 +169,9 @@ export default class Map extends React.Component<IMapProps, IMapState> {
    */
   public render() {
     logger.debug(this.loggerNode + ".render");
-    const style = Object.assign({}, mapStyles.map, this.props.style);
+    const style = ObjectAssign({}, mapStyles.map, this.props.style);
 
-    const containerStyles = Object.assign({}, mapStyles.container, this.props.containerStyle);
+    const containerStyles = ObjectAssign({}, mapStyles.container, this.props.containerStyle);
 
     return (
       <div style={containerStyles} className={this.props.className}>
@@ -197,7 +200,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
       const curr = this.state.currentLocation;
       let center = new google.maps.LatLng(curr.lat(), curr.lng());
 
-      let mapConfig = Object.assign({}, {
+      let mapConfig = ObjectAssign({}, {
         center,
         zoom: this.props.zoom,
       }) as google.maps.MapOptions;
@@ -268,7 +271,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
   private recenterMap() {
     logger.debug(this.loggerNode + ".recenterMap");
     const map = this.map;
-    if (!this.props.google) { return; };
+    if (!this.props.google) { return; }
     const maps = google.maps;
 
     if (map) {
@@ -291,7 +294,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     logger.debug(this.loggerNode + ".renderChildren");
     const {children} = this.props;
 
-    if (!children) { return; };
+    if (!children) { return; }
 
     return React.Children.map(children, (c: React.ReactElement<any>) => {
       return React.cloneElement(c, {
