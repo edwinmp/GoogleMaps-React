@@ -20,15 +20,15 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
         },
     };
     ;
-    var evtNames = ["ready", "click", "dragend", "recenter"];
+    var evtNames = ["ready", "click", "dragend", "center_changed"];
     var Map = (function (_super) {
         __extends(Map, _super);
         function Map(props) {
             _super.call(this, props);
-            this.loggerNode = "Map";
+            this.loggerNode = this.props.widget.id + ".Map";
             logger.debug(this.loggerNode + ".constructor");
             if (!props.hasOwnProperty("google") || props.google === null) {
-                logger.debug(this.loggerNode + ".You must include a 'google' prop & it must not be null");
+                throw new Error(this.loggerNode + ".You must include a 'google' prop & it must not be null");
             }
             this.listeners = [];
             this.state = {
@@ -58,9 +58,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             if (prevProps.google !== this.props.google) {
                 this.loadMap();
             }
-            if (this.props.visible !== prevProps.visible) {
-                this.restyleMap();
-            }
             if (this.props.center !== prevProps.center) {
                 this.setState({
                     currentLocation: this.props.center,
@@ -83,12 +80,10 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
         Map.prototype.render = function () {
             var _this = this;
             logger.debug(this.loggerNode + ".render");
-            var style = Object.assign({}, mapStyles.map, this.props.style, {
-                display: this.props.visible ? "inherit" : "none",
-            });
+            var style = Object.assign({}, mapStyles.map, this.props.style);
             var containerStyles = Object.assign({}, mapStyles.container, this.props.containerStyle);
-            return (React.createElement("div", { style: containerStyles, className: this.props.className },
-                React.createElement("div", { style: style, ref: function (c) { return _this.mapRef = c; } }, "Loading map..."),
+            return (React.createElement("div", {style: containerStyles, className: this.props.className}, 
+                React.createElement("div", {style: style, ref: function (c) { return _this.mapRef = c; }}, "Loading map..."), 
                 this.renderChildren()));
         };
         Map.prototype.loadMap = function () {
@@ -147,17 +142,8 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             var maps = google.maps;
             if (map) {
                 var center = this.state.currentLocation;
-                if (!(center instanceof google.maps.LatLng)) {
-                    center = new google.maps.LatLng(center.lat(), center.lng());
-                }
                 map.setCenter(center);
-                maps.event.trigger(map, "recenter");
-            }
-        };
-        Map.prototype.restyleMap = function () {
-            logger.debug(this.loggerNode + ".restyleMap");
-            if (this.map) {
-                google.maps.event.trigger(this.map, "resize");
+                maps.event.trigger(map, "center_changed");
             }
         };
         Map.prototype.renderChildren = function () {
@@ -176,18 +162,18 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                 });
             });
         };
+        Map.defaultProps = {
+            centerAroundCurrentLocation: false,
+            className: "",
+            containerStyle: {},
+            google: null,
+            style: {},
+            widget: null,
+            zoom: 14,
+        };
         return Map;
     }(React.Component));
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.default = Map;
-    Map.defaultProps = {
-        centerAroundCurrentLocation: false,
-        className: "",
-        containerStyle: {},
-        google: null,
-        style: {},
-        visible: true,
-        zoom: 14,
-    };
     ;
 });

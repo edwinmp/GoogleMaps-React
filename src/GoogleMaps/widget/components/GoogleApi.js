@@ -17,7 +17,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "../../lib/react-async-scr
         __extends(GoogleApi, _super);
         function GoogleApi(props) {
             _super.call(this, props);
-            this.loggerNode = "GoogleApi";
+            this.loggerNode = this.props.widget.id + ".GoogleApi";
             logger.debug(this.loggerNode + ".constructor");
         }
         GoogleApi.prototype.componentWillReceiveProps = function (_a) {
@@ -32,30 +32,36 @@ define(["require", "exports", "GoogleMaps/lib/react", "../../lib/react-async-scr
                 onScriptLoading();
             }
         };
+        GoogleApi.prototype.shouldComponentUpdate = function (nextProps, nextState) {
+            logger.debug(this.loggerNode + ".shouldComponentUpdate");
+            return nextProps.isScriptLoaded !== this.props.isScriptLoaded;
+        };
         GoogleApi.prototype.render = function () {
             logger.debug(this.loggerNode + ".render");
             return (React.createElement("div", null, this.getContent()));
         };
         GoogleApi.prototype.getContent = function () {
             logger.debug(this.loggerNode + ".getContent");
+            var behaviour = this.props.behaviour;
             var mapProps = {
-                centerAroundCurrentLocation: true,
+                centerAroundCurrentLocation: false,
+                widget: this.props.widget,
             };
             if (this.props.isScriptLoaded) {
-                var initialCenter = new google.maps.LatLng(37.774929, -122.419416);
-                return (React.createElement(Map_1.default, __assign({}, mapProps, { google: google, initialCenter: initialCenter })));
+                var initialCenter = new google.maps.LatLng(Number(behaviour.defaultLat), Number(behaviour.defaultLng));
+                return (React.createElement(Map_1.default, __assign({}, mapProps, {google: google, initialCenter: initialCenter})));
             }
             else {
                 return (React.createElement("div", null, "Loading ..."));
             }
         };
+        GoogleApi.defaultProps = {
+            isScriptLoaded: false,
+            isScriptLoading: true,
+            widget: null,
+        };
         return GoogleApi;
     }(React.Component));
-    GoogleApi.defaultProps = {
-        isScriptLoaded: false,
-        isScriptLoading: true,
-        widget: null,
-    };
     ;
     function GetMap(scripts) {
         return react_async_script_loader_1.default(scripts)(GoogleApi);

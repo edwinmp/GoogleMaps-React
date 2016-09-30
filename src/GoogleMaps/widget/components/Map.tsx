@@ -1,7 +1,6 @@
 
 declare var logger: mendix.logger;
 
-import autoBind from "../../lib/autoBind";
 import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
@@ -35,30 +34,24 @@ interface IMapProps extends React.Props<Map> {
   className?: string;
   style?: Object;
   containerStyle?: Object;
-  visible?: boolean;
-  [key: string]: any;
   widget: mxui.widget._WidgetBase;
+  onReady?: Function;
+  onClick?: Function;
+  OnDragend?: Function;
+  onCenterChanged?: Function;
+  [key: string]: any;
 }
 
 interface IMapState {
   currentLocation: google.maps.LatLng;
 }
 
-interface IGoogle {
-  maps: {
-      event: google.maps.event;
-      LatLng: google.maps.LatLng;
-      Map: google.maps.Map;
-    };
-}
-
 interface IMapArray extends Array<google.maps.MapsEventListener> {
   [key: string]: any;
 };
 
-const evtNames = ["ready", "click", "dragend", "recenter"];
+const evtNames = ["ready", "click", "dragend", "center_changed"];
 
-// export {wrapper as GoogleApiWrapper} from './GoogleApiComponent';
 // export {Marker} from './components/Marker'
 // export {InfoWindow} from './components/InfoWindow'
 
@@ -77,7 +70,6 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     containerStyle: {},
     google: null,
     style: {},
-    visible: true,
     widget: null,
     zoom: 14,
   };
@@ -93,7 +85,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     logger.debug(this.loggerNode + ".constructor");
 
     if (!props.hasOwnProperty("google") || props.google === null) {
-      logger.debug(this.loggerNode + ".You must include a 'google' prop & it must not be null");
+      throw new Error(this.loggerNode + ".You must include a 'google' prop & it must not be null");
     }
 
     this.listeners = [];
@@ -101,6 +93,12 @@ export default class Map extends React.Component<IMapProps, IMapState> {
       currentLocation: new google.maps.LatLng(props.initialCenter.lat(), props.initialCenter.lng()),
     };
   }
+  /**
+   * Lifecycle: Called after component has been mounted.
+   * 
+   * 
+   * @memberOf Map
+   */
   public componentDidMount() {
     logger.debug(this.loggerNode + ".componentDidMount");
     // If user wants to see his location, fetch and set it as map's current location
@@ -121,14 +119,18 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     }
     this.loadMap();
   }
-
+  /**
+   * Lifecycle: Called after component has been updated.
+   * 
+   * @param {IMapProps} prevProps
+   * @param {IMapState} prevState
+   * 
+   * @memberOf Map
+   */
   public componentDidUpdate(prevProps: IMapProps, prevState: IMapState) {
     logger.debug(this.loggerNode + ".componentDidUpdate");
     if (prevProps.google !== this.props.google) {
       this.loadMap();
-    }
-    if (this.props.visible !== prevProps.visible) {
-      this.restyleMap();
     }
     // if the location coordinates have changed, update state
     if (this.props.center !== prevProps.center) {
@@ -140,7 +142,12 @@ export default class Map extends React.Component<IMapProps, IMapState> {
       this.recenterMap();
     }
   }
-
+  /**
+   * Lifecyle: Called before component is destroyed
+   * 
+   * 
+   * @memberOf Map
+   */
   public componentWillUnmount() {
     logger.debug(this.loggerNode + ".componentWillUnmount");
     if (this.geoPromise) {
@@ -150,11 +157,16 @@ export default class Map extends React.Component<IMapProps, IMapState> {
       google.maps.event.removeListener(this.listeners[e]);
     });
   }
+  /**
+   * Lifecycle: Called to render the component
+   * 
+   * @returns
+   * 
+   * @memberOf Map
+   */
   public render() {
     logger.debug(this.loggerNode + ".render");
-    const style = Object.assign({}, mapStyles.map, this.props.style, {
-      display: this.props.visible ? "inherit" : "none",
-    });
+    const style = Object.assign({}, mapStyles.map, this.props.style);
 
     const containerStyles = Object.assign({}, mapStyles.container, this.props.containerStyle);
 
@@ -167,6 +179,14 @@ export default class Map extends React.Component<IMapProps, IMapState> {
       </div>
     );
   }
+  /**
+   * Initialize map with specific configs and render it to the dom
+   * Also register map events after initialization 
+   * 
+   * @private
+   * 
+   * @memberOf Map
+   */
   private loadMap() {
     logger.debug(this.loggerNode + ".loadMap");
     if (this.props && this.props.google) {
@@ -181,9 +201,9 @@ export default class Map extends React.Component<IMapProps, IMapState> {
         center,
         zoom: this.props.zoom,
       }) as google.maps.MapOptions;
-
+      // Initialize map with configs above and render it to dom
       this.map = new maps.Map(node, mapConfig);
-
+      // add event listeners
       evtNames.forEach(e => {
         this.listeners[e] = this.map.addListener(e, this.handleEvent(e));
       });
@@ -208,17 +228,28 @@ export default class Map extends React.Component<IMapProps, IMapState> {
         return c ? c.toUpperCase () : "";
       });
   }
-
+  /**
+   * Returns a reference to the function to execute for each registered event
+   * Makes sure each function is run asynchronously
+   * 
+   * @private
+   * @param {string} evtName
+   * @returns
+   * 
+   * @memberOf Map
+   */
   private handleEvent(evtName: string) {
     logger.debug(this.loggerNode + ".handleEvent");
     let timeout: number;
+    // get camelized version of event name... event props are represented this way
     const handlerName = `on${this.camelize(evtName)}`;
 
-    return (e) => {
+    return (e: Event) => {
       if (timeout) {
         clearTimeout(timeout);
         timeout = null;
       }
+      // Used to execute the event callback asynchronously
       timeout = setTimeout(() => {
         if (this.props[handlerName]) {
           this.props[handlerName](this.props, this.map, e);
@@ -226,7 +257,14 @@ export default class Map extends React.Component<IMapProps, IMapState> {
       }, 0);
     };
   }
-
+  /**
+   * Sets the current location based on the specified coordinates
+   * 
+   * @private
+   * @returns
+   * 
+   * @memberOf Map
+   */
   private recenterMap() {
     logger.debug(this.loggerNode + ".recenterMap");
     const map = this.map;
@@ -235,35 +273,27 @@ export default class Map extends React.Component<IMapProps, IMapState> {
 
     if (map) {
       let center = this.state.currentLocation;
-      if (!(center instanceof google.maps.LatLng)) {
-        center = new google.maps.LatLng(center.lat(), center.lng());
-      }
       // map.panTo(center)
       map.setCenter(center);
-      maps.event.trigger(map, "recenter");
+      maps.event.trigger(map, "center_changed");
     }
   }
   /**
-   * Resizes the map
+   * Used to render Markers and InfoWindows
+   * Children are cloned with the relevant props passed in
    * 
    * @private
+   * @returns
    * 
    * @memberOf Map
    */
-  private restyleMap() {
-    logger.debug(this.loggerNode + ".restyleMap");
-    if (this.map) {
-      google.maps.event.trigger(this.map, "resize");
-    }
-  }
-
   private renderChildren() {
     logger.debug(this.loggerNode + ".renderChildren");
     const {children} = this.props;
 
     if (!children) { return; };
 
-    return React.Children.map(children, (c) => {
+    return React.Children.map(children, (c: React.ReactElement<any>) => {
       return React.cloneElement(c, {
         google: this.props.google,
         map: this.map,

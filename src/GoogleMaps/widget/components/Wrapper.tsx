@@ -1,9 +1,5 @@
-declare var logger: mendix.logger;
-declare var google: Object;
-declare var mx: mx.mx;
 // declare var window: IMapsWindow;
 // import dependencies
-import autoBind from "../../lib/autoBind";
 import * as React from "GoogleMaps/lib/react";
 
 // import components
@@ -59,9 +55,20 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
             alert: { hasAlert: false },
             isScriptLoaded: false,
         };
-        // bind context TODO: Use Autobind
-        autoBind(this);
+        // bind context
+        this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
+        this.onLibraryLoaded = this.onLibraryLoaded.bind(this);
+        this.onLibraryLoadingError = this.onLibraryLoadingError.bind(this);
+        this.onLibraryLoading = this.onLibraryLoading.bind(this);
+        this.alertDiv = this.alertDiv.bind(this);
     }
+    /**
+     * Lifecycle: Called to render the component
+     * 
+     * @returns
+     * 
+     * @memberOf Wrapper
+     */
     public render() {
         logger.debug(this.loggerNode + ".render");
         const props = this.props;
@@ -76,6 +83,14 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
             </div>
         );
     }
+    /**
+     * Returns component that loads the google api and subsequently the Map component
+     * 
+     * @private
+     * @returns
+     * 
+     * @memberOf Wrapper
+     */
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
         const GoogleComponent = GoogleApi([this.getGoogleMapsApiUrl()]);
@@ -83,9 +98,9 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
             return (
                 <GoogleComponent
                     {...this.props}
-                    onScriptLoaded={this.onLibraryLoaded}
                     isScriptLoaded={this.state.isScriptLoaded}
                     isScriptLoading={this.isScriptLoading}
+                    onScriptLoaded={this.onLibraryLoaded}
                     onScriptLoading={this.onLibraryLoading}
                     onScriptLoadingError={this.onLibraryLoadingError}
                 />
@@ -93,6 +108,15 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
         }
         return null;
     }
+    /**
+     * Creates an alert
+     * TODO: Consider making this a component with option to support other alert classes
+     * 
+     * @private
+     * @returns
+     * 
+     * @memberOf Wrapper
+     */
     private alertDiv() {
         logger.debug(this.loggerNode + ".alertDiv");
         const alertState = this.state.alert;
@@ -106,7 +130,11 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
         return null;
     }
     private getGoogleMapsApiUrl() {
-        return `${this.googleMapsApiBaseUrl}?key=${this.props.apiKey}&libraries=${this.libraries.join()}`;
+        return this.googleMapsApiBaseUrl +
+               "?key=" +
+               this.props.apiKey +
+               "&libraries=" +
+               this.libraries.join();
     }
     /**
      * Called when google Maps API script is successfully loaded
@@ -158,19 +186,5 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
             isScriptLoaded: false,
         });
         this.isScriptLoading = false;
-    }
-    // call the microflow and remove progress on finishing
-    private callMicroflow(microflow: string, successCallback?: Function, errorCallback?: Function) {
-        logger.debug(this.loggerNode + ".callMicroflow");
-        mx.data.action({
-            callback: successCallback,
-            error: errorCallback,
-            params: {
-                actionname: microflow,
-            },
-            store: {
-                caller: this.props.widget.mxform,
-            },
-        });
     }
 };

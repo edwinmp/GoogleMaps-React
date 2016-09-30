@@ -86,6 +86,7 @@ $RECYCLE.BIN/
 
 # IDE
 .vscode
+.idea
 
 # test
 test/javasource/
@@ -94,8 +95,6 @@ test/.classpath
 test/.project
 test/theme/
 test/userlib/
-test/.classpath
-test/.project
 
 # Typescript generated .js files
 src/GoogleMaps/lib/autoBind.js

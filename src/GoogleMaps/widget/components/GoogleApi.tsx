@@ -1,5 +1,3 @@
-declare var logger: mendix.logger;
-declare var mx: mx.mx;
 // declare var window: IMapsWindow;
 // import dependencies
 import * as React from "GoogleMaps/lib/react";

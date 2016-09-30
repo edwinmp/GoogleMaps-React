@@ -14,18 +14,13 @@
     Google Maps Widget built with React-TypeScript .
 */
 
-// declare globals
-declare var mx: mx.mx;
-declare var logger: mendix.logger;
-declare var window: IMapsWindow;
-
 // import dependent modules
 import * as dojoDeclare from "dojo/_base/declare";
 import * as dojoLang from "dojo/_base/lang";
 import * as domStyle from "dojo/dom-style";
 import * as mxLang from "mendix/lang";
 import * as _WidgetBase from  "mxui/widget/_WidgetBase";
-
+// tslint:disable-next-line
 import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
@@ -54,16 +49,21 @@ export default class GoogleMaps extends _WidgetBase {
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;
     private handles: any[];
-    private _readOnly: boolean;
     private behaviour: IMapBehaviour;
 
-    // The TypeScript Contructor, not the dojo consctuctor, move contructor work into widget prototype at bottom of the page. 
+    /**
+     * The TypeScript Contructor, not the dojo consctuctor.
+     * move contructor work into widget prototype at bottom of the page.
+     */
     constructor(args?: Object, elem?: HTMLElement) {
         // Do not add any default value here... it wil not run in dojo!     
         super() ;
         return new dojoGoogleMaps(args, elem);
     }
-    // dijit._WidgetBase.postCreate is called after constructing the widget. Implement to do extra setup work.
+
+    /**
+     * dijit._WidgetBase.postCreate is called after constructing the widget. Implement to do extra setup work.
+     */
     public postCreate() {
         logger.debug(this.id + ".postCreate");
         // set widget dimensions
@@ -80,7 +80,13 @@ export default class GoogleMaps extends _WidgetBase {
 
         this._updateRendering();
     }
-    // mxui.widget._WidgetBase.update is called when context is changed or initialized. Implement to re-render and / or fetch data.
+
+    /**
+     * mxui.widget._WidgetBase.update is called when context is changed or initialized.
+     * Implement to re-render and / or fetch data.
+     * @param obj
+     * @param callback
+     */
     public update(obj: mendix.lib.MxObject, callback?: Function) {
         logger.debug(this.id + ".update");
         this.contextObj = obj;
@@ -88,13 +94,23 @@ export default class GoogleMaps extends _WidgetBase {
         this._updateRendering(callback);
         this._resetSubscriptions();
     }
-    // mxui.widget._WidgetBase.uninitialize is called when the widget is destroyed. Implement to do special tear-down work.
+
+    /**
+     * mxui.widget._WidgetBase.uninitialize is called when the widget is destroyed.
+     * Implement to do special tear-down work.
+     */
     public uninitialize() {
         logger.debug(this.id + ".uninitialize");
-        // Clean up listeners, helper objects, etc. There is no need to remove listeners added with this.connect / this.subscribe / this.own.  
+        // Clean up listeners, helper objects, etc.
+        // There is no need to remove listeners added with this.connect / this.subscribe / this.own.
         ReactDOM.unmountComponentAtNode(this.domNode);
     }
-    // Render the widget interface.
+
+    /**
+     * Render the widget interface.
+     * @param callback
+     * @private
+     */
     private _updateRendering (callback?: Function) {
         logger.debug(this.id + ".updateRendering");
         if (this.contextObj !== null && typeof(this.contextObj) !== "undefined") {
@@ -130,7 +146,7 @@ export default class GoogleMaps extends _WidgetBase {
         // When a mendix object exists create subscribtions.
         if (this.contextObj) {
             let objectHandle = mx.data.subscribe({
-                callback: dojoLang.hitch(this, function (guid: string) {
+                callback: dojoLang.hitch(this, (guid: string) => {
                     this._updateRendering();
                 }),
                 guid: this.contextObj.getGuid(),
@@ -151,6 +167,7 @@ export default class GoogleMaps extends _WidgetBase {
 
 // Declare widget's prototype the Dojo way
 // Thanks to https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/dojo/README.md
+/* tslint:disable:only-arrow-functions */
 let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], (function(Source: any) {
     let result: any = {};
     // dojo.declare.constructor is called to construct the widget instance.
@@ -165,4 +182,3 @@ let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], 
     }
     return result;
 } (GoogleMaps)));
-

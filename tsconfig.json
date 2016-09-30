@@ -11,10 +11,11 @@
 		"jsx": "react",
 		"moduleResolution": "node"
 	},
-  "exclude": [
-    "node_modules",
-    "test",
+	"exclude": [
+		"node_modules",
+		"test",
 		"out",
-		"nbproject"
-  ]
+		"nbproject",
+		"typings/redux"
+	]
 }
