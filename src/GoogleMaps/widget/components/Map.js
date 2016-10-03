@@ -88,7 +88,8 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
         Map.prototype.loadMap = function () {
             var _this = this;
             logger.debug(this.loggerNode + ".loadMap");
-            if (this.props && this.props.google) {
+            var props = this.props;
+            if (props && props.google) {
                 var maps = google.maps;
                 var mapRef = this.mapRef;
                 var node = ReactDOM.findDOMNode(mapRef);
@@ -96,7 +97,8 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                 var center = new google.maps.LatLng(curr.lat(), curr.lng());
                 var mapConfig = Polyfills_1.ObjectAssign({}, {
                     center: center,
-                    zoom: this.props.zoom,
+                    mapTypeId: props.mapTypeId,
+                    zoom: props.zoom,
                 });
                 this.map = new maps.Map(node, mapConfig);
                 evtNames.forEach(function (e) {
@@ -164,6 +166,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
             className: "",
             containerStyle: {},
             google: null,
+            mapTypeId: typeof google !== "undefined" ? google.maps.MapTypeId.ROADMAP : undefined,
             style: {},
             widgetID: "GoogleMaps",
             zoom: 14,

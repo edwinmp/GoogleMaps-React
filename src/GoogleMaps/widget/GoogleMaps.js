@@ -23,6 +23,9 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
                 defaultLat: this.defaultLat,
                 defaultLng: this.defaultLng,
             };
+            this.appearance = {
+                defaultMapType: this.defaultMapType,
+            };
             this._updateRendering();
         };
         GoogleMaps.prototype.update = function (obj, callback) {
@@ -38,7 +41,7 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
         GoogleMaps.prototype._updateRendering = function (callback) {
             logger.debug(this.id + ".updateRendering");
             if (this.contextObj !== null && typeof (this.contextObj) !== "undefined") {
-                ReactDOM.render(React.createElement(Wrapper_1.default, {apiKey: this.apiAccessKey, behaviour: this.behaviour, widgetID: this.id, width: this.mapWidth, height: this.mapHeight}), this.domNode);
+                ReactDOM.render(React.createElement(Wrapper_1.default, {apiKey: this.apiAccessKey, appearance: this.appearance, behaviour: this.behaviour, widgetID: this.id, width: this.mapWidth, height: this.mapHeight}), this.domNode);
             }
             mxLang.nullExec(callback);
         };

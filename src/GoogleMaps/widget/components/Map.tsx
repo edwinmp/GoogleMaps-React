@@ -28,12 +28,13 @@ interface ILatLng {
     lat: number;
     lng: number;
   }
-interface IMapProps extends React.Props<Map> {
+export interface MapProps extends React.Props<Map> {
   google: {};
   zoom?: number;
   centerAroundCurrentLocation?: boolean;
   center?: google.maps.LatLng;
   initialCenter?: google.maps.LatLng;
+  mapTypeId?: google.maps.MapTypeId | string;
   className?: string;
   style?: Object;
   containerStyle?: Object;
@@ -45,11 +46,11 @@ interface IMapProps extends React.Props<Map> {
   [key: string]: any;
 }
 
-interface IMapState {
+interface MapState {
   currentLocation: google.maps.LatLng;
 }
 
-interface IMapArray extends Array<google.maps.MapsEventListener> {
+interface MapArray extends Array<google.maps.MapsEventListener> {
   [key: string]: any;
 }
 
@@ -58,27 +59,28 @@ const evtNames = ["ready", "click", "dragend", "center_changed"];
 // export {Marker} from './components/Marker'
 // export {InfoWindow} from './components/InfoWindow'
 
-export default class Map extends React.Component<IMapProps, IMapState> {
+export default class Map extends React.Component<MapProps, MapState> {
   /**
    * declare default props
    * 
    */
-  public static defaultProps: IMapProps = {
+  public static defaultProps: MapProps = {
     centerAroundCurrentLocation: false,
     className: "",
     containerStyle: {},
     google: null,
+    mapTypeId: typeof google !== "undefined" ? google.maps.MapTypeId.ROADMAP : undefined,
     style: {},
     widgetID: "GoogleMaps",
     zoom: 14,
   };
-  private listeners: IMapArray; // used to manage the map event listeners
+  private listeners: MapArray; // used to manage the map event listeners
   private geoPromise: dojo.Deferred;
   private mapRef: HTMLElement;
   private map: google.maps.Map;
   private loggerNode: string;
 
-  constructor(props: IMapProps) {
+  constructor(props: MapProps) {
     super(props);
     this.loggerNode = this.props.widgetID + ".Map";
     logger.debug(this.loggerNode + ".constructor");
@@ -124,7 +126,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
    * 
    * @memberOf Map
    */
-  public componentDidUpdate(prevProps: IMapProps, prevState: IMapState) {
+  public componentDidUpdate(prevProps: MapProps, prevState: MapState) {
     logger.debug(this.loggerNode + ".componentDidUpdate");
     if (prevProps.google !== this.props.google) {
       this.loadMap();
@@ -186,7 +188,8 @@ export default class Map extends React.Component<IMapProps, IMapState> {
    */
   private loadMap() {
     logger.debug(this.loggerNode + ".loadMap");
-    if (this.props && this.props.google) {
+    const props = this.props;
+    if (props && props.google) {
       const maps = google.maps;
 
       const mapRef = this.mapRef;
@@ -196,7 +199,8 @@ export default class Map extends React.Component<IMapProps, IMapState> {
 
       let mapConfig = ObjectAssign({}, {
         center,
-        zoom: this.props.zoom,
+        mapTypeId: props.mapTypeId,
+        zoom: props.zoom,
       }) as google.maps.MapOptions;
       // Initialize map with configs above and render it to dom
       this.map = new maps.Map(node, mapConfig);

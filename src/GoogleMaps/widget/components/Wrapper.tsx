@@ -3,35 +3,40 @@ declare var window: IWindow;
 import * as React from "GoogleMaps/lib/react";
 
 // import components
-import Map from "./Map";
+import Map, {MapProps} from "./Map";
 
 interface IWindow extends Window {
     loadedScript: Array<string>;
 }
-interface IWrapperProps {
+interface WrapperProps {
+    appearance: MapAppearance;
     apiKey: string;
-    behaviour: IMapBehaviour;
+    behaviour: MapBehaviour;
     height: number;
     widgetID: string;
     width: number;
 }
-interface IWrapperState {
+interface WrapperState {
     isScriptLoaded: boolean;
-    alert?: IAlert;
+    alert?: Alert;
 }
-interface IAlert {
+interface Alert {
     hasAlert: boolean;
     alertText?: string;
 }
-export interface IMapBehaviour {
+export interface MapBehaviour {
     apiAccessKey?: string;
     defaultLat?: string;
     defaultLng?: string;
 }
+export interface MapAppearance {
+    defaultMapType?: string;
+}
 
-export default class Wrapper extends React.Component<IWrapperProps, IWrapperState> {
-    public static defaultProps: IWrapperProps = {
+export default class Wrapper extends React.Component<WrapperProps, WrapperState> {
+    public static defaultProps: WrapperProps = {
         apiKey: "",
+        appearance: {},
         behaviour: {},
         height: 0,
         widgetID: "GoogleMaps",
@@ -42,7 +47,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
     private google: Object;
     private loggerNode: string;
 
-    public constructor(props: IWrapperProps) {
+    public constructor(props: WrapperProps) {
         super(props);
         this.loggerNode = this.props.widgetID + ".Wrapper";
         logger.debug(this.loggerNode + ".constructor");
@@ -98,18 +103,19 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
      */
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
-        const behaviour = this.props.behaviour;
-        const mapProps = {
-            centerAroundCurrentLocation: false,
-            widgetID: this.props.widgetID,
-        };
         if (this.state.isScriptLoaded) {
-            const initialCenter = new google.maps.LatLng(Number(behaviour.defaultLat), Number(behaviour.defaultLng));
+            const behaviour = this.props.behaviour;
+            const appearance = this.props.appearance;
+            const mapProps: MapProps = {
+                centerAroundCurrentLocation: false,
+                google,
+                initialCenter: new google.maps.LatLng(Number(behaviour.defaultLat), Number(behaviour.defaultLng)),
+                mapTypeId: google.maps.MapTypeId[appearance.defaultMapType as any],
+                widgetID: this.props.widgetID,
+            };
             return (
                 <Map
                     {...mapProps}
-                    google={google}
-                    initialCenter={initialCenter}
                 />
             );
         } else {

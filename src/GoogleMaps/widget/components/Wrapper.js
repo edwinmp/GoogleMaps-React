@@ -62,14 +62,17 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map"], function (requir
         };
         Wrapper.prototype.getContent = function () {
             logger.debug(this.loggerNode + ".getContent");
-            var behaviour = this.props.behaviour;
-            var mapProps = {
-                centerAroundCurrentLocation: false,
-                widgetID: this.props.widgetID,
-            };
             if (this.state.isScriptLoaded) {
-                var initialCenter = new google.maps.LatLng(Number(behaviour.defaultLat), Number(behaviour.defaultLng));
-                return (React.createElement(Map_1.default, __assign({}, mapProps, {google: google, initialCenter: initialCenter})));
+                var behaviour = this.props.behaviour;
+                var appearance = this.props.appearance;
+                var mapProps = {
+                    centerAroundCurrentLocation: false,
+                    google: google,
+                    initialCenter: new google.maps.LatLng(Number(behaviour.defaultLat), Number(behaviour.defaultLng)),
+                    mapTypeId: google.maps.MapTypeId[appearance.defaultMapType],
+                    widgetID: this.props.widgetID,
+                };
+                return (React.createElement(Map_1.default, __assign({}, mapProps)));
             }
             else {
                 return (React.createElement("div", null, "Loading ..."));
@@ -126,6 +129,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map"], function (requir
         };
         Wrapper.defaultProps = {
             apiKey: "",
+            appearance: {},
             behaviour: {},
             height: 0,
             widgetID: "GoogleMaps",
