@@ -39,7 +39,6 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
     };
     private libraries: string[];
     private googleMapsApiBaseUrl: string;
-    private isScriptLoading: boolean;
     private google: Object;
     private loggerNode: string;
 
@@ -78,9 +77,6 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
     /**
      * Life cycle: Called to render the component
      * 
-     * @returns
-     * 
-     * @memberOf Wrapper
      */
     public render() {
         logger.debug(this.loggerNode + ".render");
@@ -99,10 +95,6 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
     /**
      * Returns component that loads the google api and subsequently the Map component
      * 
-     * @private
-     * @returns
-     * 
-     * @memberOf Wrapper
      */
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
@@ -150,13 +142,17 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
         const alertState = this.state.alert;
         if (alertState && alertState.hasAlert) {
             return (
-                <div className="messagePane alert alert-danger">
+                <div className="alert-pane alert alert-danger">
                     {alertState.alertText}
                 </div>
             );
         }
         return null;
     }
+    /**
+     * Returns google maps api script
+     * 
+     */
     private getGoogleMapsApiUrl() {
         return this.googleMapsApiBaseUrl +
                "?key=" +
@@ -196,8 +192,11 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
             },
             isScriptLoaded: false,
         });
-        this.isScriptLoading = false;
     }
+    /**
+     * Keep track of loaded scripts so as not to load them more than once
+     * 
+     */
     private addCache = (entry: string) => {
         if (window.loadedScript && window.loadedScript.indexOf(entry) < 0) {
             window.loadedScript.push(entry);

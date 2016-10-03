@@ -62,10 +62,6 @@ export default class Map extends React.Component<IMapProps, IMapState> {
   /**
    * declare default props
    * 
-   * @private
-   * @static
-   * @type {IMapProps}
-   * @memberOf Map
    */
   public static defaultProps: IMapProps = {
     centerAroundCurrentLocation: false,
@@ -99,8 +95,6 @@ export default class Map extends React.Component<IMapProps, IMapState> {
   /**
    * Life cycle: Called after component has been mounted.
    * 
-   * 
-   * @memberOf Map
    */
   public componentDidMount() {
     logger.debug(this.loggerNode + ".componentDidMount");

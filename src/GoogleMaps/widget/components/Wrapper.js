@@ -87,7 +87,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map"], function (requir
             logger.debug(this.loggerNode + ".alertDiv");
             var alertState = this.state.alert;
             if (alertState && alertState.hasAlert) {
-                return (React.createElement("div", {className: "messagePane alert alert-danger"}, alertState.alertText));
+                return (React.createElement("div", {className: "alert-pane alert alert-danger"}, alertState.alertText));
             }
             return null;
         };
@@ -123,7 +123,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map"], function (requir
                 },
                 isScriptLoaded: false,
             });
-            this.isScriptLoading = false;
         };
         Wrapper.defaultProps = {
             apiKey: "",
@@ -138,3 +137,4 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map"], function (requir
     exports.default = Wrapper;
     ;
 });
+//# sourceMappingURL=Wrapper.js.map

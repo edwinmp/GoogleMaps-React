@@ -23,3 +23,4 @@ define(["require", "exports"], function (require, exports) {
     }
     exports.ObjectAssign = ObjectAssign;
 });
+//# sourceMappingURL=Polyfills.js.map

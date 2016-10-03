@@ -9,7 +9,8 @@
 		"noLib": false,
 		"watch":true,
 		"jsx": "react",
-		"moduleResolution": "node"
+		"moduleResolution": "node",
+		"sourceMap": true
 	},
 	"exclude": [
 		"node_modules",
