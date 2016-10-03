@@ -5,7 +5,7 @@ import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 // import Utilities
-import {ObjectAssign} from "../utils/Polyfils";
+import {ObjectAssign} from "../../lib/Polyfills";
 
 import * as dojoDeferred from "dojo/Deferred";
 
@@ -37,7 +37,7 @@ interface IMapProps extends React.Props<Map> {
   className?: string;
   style?: Object;
   containerStyle?: Object;
-  widget: mxui.widget._WidgetBase;
+  widgetID: string;
   onReady?: Function;
   onClick?: Function;
   OnDragend?: Function;
@@ -73,7 +73,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     containerStyle: {},
     google: null,
     style: {},
-    widget: null,
+    widgetID: "GoogleMaps",
     zoom: 14,
   };
   private listeners: IMapArray; // used to manage the map event listeners
@@ -84,7 +84,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
 
   constructor(props: IMapProps) {
     super(props);
-    this.loggerNode = this.props.widget.id + ".Map";
+    this.loggerNode = this.props.widgetID + ".Map";
     logger.debug(this.loggerNode + ".constructor");
 
     if (!props.hasOwnProperty("google") || props.google === null) {
@@ -97,7 +97,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     };
   }
   /**
-   * Lifecycle: Called after component has been mounted.
+   * Life cycle: Called after component has been mounted.
    * 
    * 
    * @memberOf Map
@@ -123,7 +123,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     this.loadMap();
   }
   /**
-   * Lifecycle: Called after component has been updated.
+   * Life cycle: Called after component has been updated.
    * 
    * @param {IMapProps} prevProps
    * @param {IMapState} prevState
@@ -146,7 +146,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     }
   }
   /**
-   * Lifecyle: Called before component is destroyed
+   * Life cycle: Called before component is destroyed
    * 
    * 
    * @memberOf Map
@@ -161,7 +161,7 @@ export default class Map extends React.Component<IMapProps, IMapState> {
     });
   }
   /**
-   * Lifecycle: Called to render the component
+   * Life cycle: Called to render the component
    * 
    * @returns
    * 

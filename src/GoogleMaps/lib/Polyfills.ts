@@ -1,5 +1,5 @@
 /**
- * Created by emage on 9/30/2016.
+ * Created by Edwin P. Magezi on 9/30/2016.
  */
 
 export function ObjectAssign(target: Object, ...sources: any[]) {

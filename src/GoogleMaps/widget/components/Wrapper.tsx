@@ -1,15 +1,18 @@
-// declare var window: IMapsWindow;
+declare var window: IWindow;
 // import dependencies
 import * as React from "GoogleMaps/lib/react";
 
 // import components
-import GoogleApi from "./GoogleApi";
+import Map from "./Map";
 
+interface IWindow extends Window {
+    loadedScript: Array<string>;
+}
 interface IWrapperProps {
     apiKey: string;
     behaviour: IMapBehaviour;
     height: number;
-    widget: mxui.widget._WidgetBase;
+    widgetID: string;
     width: number;
 }
 interface IWrapperState {
@@ -21,6 +24,7 @@ interface IAlert {
     alertText?: string;
 }
 export interface IMapBehaviour {
+    apiAccessKey?: string;
     defaultLat?: string;
     defaultLng?: string;
 }
@@ -30,7 +34,7 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
         apiKey: "",
         behaviour: {},
         height: 0,
-        widget: null,
+        widgetID: "GoogleMaps",
         width: 0,
     };
     private libraries: string[];
@@ -41,29 +45,38 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
 
     public constructor(props: IWrapperProps) {
         super(props);
-        this.loggerNode = this.props.widget.id + ".Wrapper";
+        this.loggerNode = this.props.widgetID + ".Wrapper";
         logger.debug(this.loggerNode + ".constructor");
-        // instatiate class variables
+        // instantiate class variables
         this.libraries = ["geometry", "places", "visualization", "places"];
         this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
-        this.isScriptLoading = false;
-        if (typeof google === "undefined") {
-            this.google = null;
+        if (!window.loadedScript) {
+            window.loadedScript = [];
         }
-        // default state
-        this.state = {
-            alert: { hasAlert: false },
-            isScriptLoaded: false,
-        };
         // bind context
         this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
-        this.onLibraryLoaded = this.onLibraryLoaded.bind(this);
-        this.onLibraryLoadingError = this.onLibraryLoadingError.bind(this);
-        this.onLibraryLoading = this.onLibraryLoading.bind(this);
+        this.onScriptLoaded = this.onScriptLoaded.bind(this);
+        this.onScriptLoadingError = this.onScriptLoadingError.bind(this);
         this.alertDiv = this.alertDiv.bind(this);
+
+        // load google api script
+        const src = this.getGoogleMapsApiUrl();
+        if ((window.loadedScript && window.loadedScript.indexOf(src) < 0) || typeof google === "undefined") {
+            this.google = null;
+            this.state = {
+                alert: { hasAlert: false },
+                isScriptLoaded: false,
+            };
+            this.loadGoogleScript(src, this.onScriptLoaded, this.onScriptLoadingError);
+        } else {
+            this.state = {
+                alert: { hasAlert: false },
+                isScriptLoaded: true,
+            };
+        }
     }
     /**
-     * Lifecycle: Called to render the component
+     * Life cycle: Called to render the component
      * 
      * @returns
      * 
@@ -93,29 +106,44 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
      */
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
-        const GoogleComponent = GoogleApi([this.getGoogleMapsApiUrl()]);
-        if (!this.isScriptLoading || this.state.isScriptLoaded) {
+        const behaviour = this.props.behaviour;
+        const mapProps = {
+            centerAroundCurrentLocation: false,
+            widgetID: this.props.widgetID,
+        };
+        if (this.state.isScriptLoaded) {
+            const initialCenter = new google.maps.LatLng(Number(behaviour.defaultLat), Number(behaviour.defaultLng));
             return (
-                <GoogleComponent
-                    {...this.props}
-                    isScriptLoaded={this.state.isScriptLoaded}
-                    isScriptLoading={this.isScriptLoading}
-                    onScriptLoaded={this.onLibraryLoaded}
-                    onScriptLoading={this.onLibraryLoading}
-                    onScriptLoadingError={this.onLibraryLoadingError}
+                <Map
+                    {...mapProps}
+                    google={google}
+                    initialCenter={initialCenter}
                 />
             );
+        } else {
+            return (
+                <div>
+                    Loading ...
+                </div>
+            );
         }
-        return null;
     }
+    /**
+     * Load google api script that's required to use the google maps
+     * Execute the success and error callbacks to handle the respective events
+     * 
+     */
+    private loadGoogleScript(src: string, onLoad: Function, onError: Function) {
+        const script = document.createElement("script");
+        script.src = src;
+        script.onload = () => onLoad();
+        script.onerror = () => onError();
+        document.body.appendChild(script);
+    };
     /**
      * Creates an alert
      * TODO: Consider making this a component with option to support other alert classes
      * 
-     * @private
-     * @returns
-     * 
-     * @memberOf Wrapper
      */
     private alertDiv() {
         logger.debug(this.loggerNode + ".alertDiv");
@@ -139,15 +167,12 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
     /**
      * Called when google Maps API script is successfully loaded
      * 
-     * @private
-     * 
-     * @memberOf GoogleMaps
      */
-    private onLibraryLoaded() {
-        logger.debug(this.loggerNode + ".onLibraryLoaded");
+    private onScriptLoaded() {
+        logger.debug(this.loggerNode + ".onScriptLoaded");
         if (!this.state.isScriptLoaded && google) {
-            // window.isScriptLoaded = true;
             this.google = google;
+            this.addCache(this.getGoogleMapsApiUrl());
             if (this.state.alert.hasAlert) {
                 this.setState({
                     alert: { hasAlert: false },
@@ -159,25 +184,11 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
         }
     }
     /**
-     * Called when google Maps API script is loading
+     * Called when google maps API script fails to load
      * 
-     * @private
-     * 
-     * @memberOf GoogleMaps
      */
-    private onLibraryLoading() {
-        logger.debug(this.loggerNode + ".onLibraryLoading");
-        this.isScriptLoading = true;
-    }
-    /**
-     * Called when google Maps API script fails to load
-     * 
-     * @private
-     * 
-     * @memberOf GoogleMaps
-     */
-    private onLibraryLoadingError() {
-        logger.debug(this.loggerNode + ".onLibraryLoadingError");
+    private onScriptLoadingError() {
+        logger.debug(this.loggerNode + ".onScriptLoadingError");
         this.setState({
             alert: {
                 alertText: "Failed to load google maps script ... please check your internet connection",
@@ -187,4 +198,9 @@ export default class Wrapper extends React.Component<IWrapperProps, IWrapperStat
         });
         this.isScriptLoading = false;
     }
+    private addCache = (entry: string) => {
+        if (window.loadedScript && window.loadedScript.indexOf(entry) < 0) {
+            window.loadedScript.push(entry);
+        }
+    };
 };

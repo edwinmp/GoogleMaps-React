@@ -10,7 +10,7 @@
 <mapEntry key="M2EE_ADMIN_PASS" value="1"/>
 <mapEntry key="M2EE_ADMIN_PORT" value="8190"/>
 <mapEntry key="M2EE_CONSOLE_PATH" value="C:/Program Files/Mendix/6.8.0/modeler/MendixConsoleLog.exe"/>
-<mapEntry key="MXCONSOLE_BASE_PATH" value="C:/Users/emage/GitHub/GoogleMaps-React/test/deployment"/>
+<mapEntry key="MXCONSOLE_BASE_PATH" value="c:/Users/emage/GitHub/GoogleMaps-React/test/deployment"/>
 <mapEntry key="MXCONSOLE_RUNTIME_PATH" value="C:/Program Files/Mendix/6.8.0/runtime"/>
 <mapEntry key="MXCONSOLE_RUNTIME_PORT" value="8180"/>
 <mapEntry key="MXCONSOLE_SERVER_URL" value="http://127.0.0.1:8190/"/>
@@ -25,6 +25,6 @@
 <booleanAttribute key="org.eclipse.jdt.launching.DEFAULT_CLASSPATH" value="false"/>
 <stringAttribute key="org.eclipse.jdt.launching.MAIN_TYPE" value="org.apache.felix.main.Main"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="test"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.net.preferIPv4Stack=true -Djava.library.path=&quot;C:/Program Files/Mendix/6.8.0/runtime/lib/x64;C:/Users/emage/GitHub/GoogleMaps-React/test/deployment/model/lib/userlib&quot; -Dfile.encoding=UTF-8 -Djava.io.tmpdir=&quot;C:/Users/emage/GitHub/GoogleMaps-React/test/deployment/data/tmp&quot; -Djava.security.policy==&quot;C:\Users\emage\GitHub\GoogleMaps-React\test\deployment\data\.policy&quot; -Dorg.osgi.framework.security=&quot;osgi&quot; -Dcom.mendix.policy.file=&quot;C:\Users\emage\GitHub\GoogleMaps-React\test\deployment\data\security.policy&quot; -Dfelix.config.properties=file:run/felixconfig.properties -Dorg.osgi.service.http.port=8180"/>
-<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="C:/Users/emage/GitHub/GoogleMaps-React/test/deployment"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Djava.net.preferIPv4Stack=true -Djava.library.path=&quot;C:/Program Files/Mendix/6.8.0/runtime/lib/x64;c:/Users/emage/GitHub/GoogleMaps-React/test/deployment/model/lib/userlib&quot; -Dfile.encoding=UTF-8 -Djava.io.tmpdir=&quot;c:/Users/emage/GitHub/GoogleMaps-React/test/deployment/data/tmp&quot; -Djava.security.policy==&quot;c:\Users\emage\GitHub\GoogleMaps-React\test\deployment\data\.policy&quot; -Dorg.osgi.framework.security=&quot;osgi&quot; -Dcom.mendix.policy.file=&quot;c:\Users\emage\GitHub\GoogleMaps-React\test\deployment\data\security.policy&quot; -Dfelix.config.properties=file:run/felixconfig.properties -Dorg.osgi.service.http.port=8180"/>
+<stringAttribute key="org.eclipse.jdt.launching.WORKING_DIRECTORY" value="c:/Users/emage/GitHub/GoogleMaps-React/test/deployment"/>
 </launchConfiguration>

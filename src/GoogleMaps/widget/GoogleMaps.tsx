@@ -27,11 +27,6 @@ import ReactDOM = require("GoogleMaps/lib/react-dom");
 // import components
 import Wrapper, { IMapBehaviour } from "./components/Wrapper";
 
-// interface extensions
-export interface IMapsWindow extends Window {
-    // Use this to extend the Window global with your own properties
-}
-
 export default class GoogleMaps extends _WidgetBase {
     /**
      * Parameters configured in the Modeler
@@ -74,6 +69,7 @@ export default class GoogleMaps extends _WidgetBase {
         });
         // initialize widget component props
         this.behaviour = {
+            apiAccessKey: this.apiAccessKey,
             defaultLat: this.defaultLat,
             defaultLng: this.defaultLng,
         };
@@ -119,7 +115,7 @@ export default class GoogleMaps extends _WidgetBase {
                 <Wrapper
                     apiKey={this.apiAccessKey}
                     behaviour={this.behaviour}
-                    widget={this}
+                    widgetID={this.id}
                     width={this.mapWidth}
                     height={this.mapHeight}
                 />,
