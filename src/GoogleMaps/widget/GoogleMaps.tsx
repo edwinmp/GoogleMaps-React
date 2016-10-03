@@ -47,8 +47,8 @@ export default class GoogleMaps extends _WidgetBase {
     private behaviour: IMapBehaviour;
 
     /**
-     * The TypeScript Contructor, not the dojo consctuctor.
-     * move contructor work into widget prototype at bottom of the page.
+     * The TypeScript constructor, not the dojo constructor.
+     * move constructor work into widget prototype at bottom of the page.
      */
     constructor(args?: Object, elem?: HTMLElement) {
         // Do not add any default value here... it wil not run in dojo!     
@@ -139,7 +139,7 @@ export default class GoogleMaps extends _WidgetBase {
         logger.debug(this.id + "._resetSubscriptions");
         // Release handles on previous object, if any.
         this._unsubscribe();
-        // When a mendix object exists create subscribtions.
+        // When a mendix object exists create subscriptions.
         if (this.contextObj) {
             let objectHandle = mx.data.subscribe({
                 callback: dojoLang.hitch(this, (guid: string) => {
@@ -161,7 +161,7 @@ export default class GoogleMaps extends _WidgetBase {
     }
 }
 
-// Declare widget's prototype the Dojo way
+// Declare widget prototype the Dojo way
 // Thanks to https://github.com/DefinitelyTyped/DefinitelyTyped/blob/master/dojo/README.md
 /* tslint:disable:only-arrow-functions */
 let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], (function(Source: any) {
