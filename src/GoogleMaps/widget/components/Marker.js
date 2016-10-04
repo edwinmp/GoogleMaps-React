@@ -60,9 +60,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "dojo/Deferred", "../utils
         };
         Marker.defaultProps = {
             google: typeof google !== "undefined" ? google : null,
-            map: null,
-            mapCenter: null,
-            position: null,
         };
         return Marker;
     }(React.Component));

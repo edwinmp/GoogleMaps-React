@@ -11,15 +11,13 @@ interface MarkerProps extends React.Props<Marker> {
     position?: google.maps.LatLng;
     google?: Object;
     mapCenter?: google.maps.LatLng;
+    icon?: string;
     [key: string]: any;
 }
 
 export default class Marker extends React.Component<MarkerProps, any> {
     public static defaultProps: MarkerProps = {
         google: typeof google !== "undefined" ? google : null,
-        map: null,
-        mapCenter: null,
-        position: null,
     };
     private markerPromise: dojo.Deferred;
     private marker: google.maps.Marker;
