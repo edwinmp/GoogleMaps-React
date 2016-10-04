@@ -17,11 +17,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
         __extends(Wrapper, _super);
         function Wrapper(props) {
             _super.call(this, props);
-            this.addCache = function (entry) {
-                if (window.loadedScript && window.loadedScript.indexOf(entry) < 0) {
-                    window.loadedScript.push(entry);
-                }
-            };
             this.loggerNode = this.props.widgetID + ".Wrapper";
             logger.debug(this.loggerNode + ".constructor");
             this.libraries = ["geometry", "places", "visualization", "places"];
@@ -63,18 +58,20 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
         Wrapper.prototype.getContent = function () {
             logger.debug(this.loggerNode + ".getContent");
             if (this.state.isScriptLoaded) {
-                var behaviour = this.props.behaviour;
-                var appearance = this.props.appearance;
+                var props = this.props;
+                var behaviour = props.behaviour;
+                var appearance = props.appearance;
                 var mapProps = {
                     centerAroundCurrentLocation: false,
                     google: google,
-                    initialCenter: new google.maps.LatLng(Number(behaviour.defaultLat), Number(behaviour.defaultLng)),
+                    initialCenter: this.getInitialCenter(),
                     mapTypeId: google.maps.MapTypeId[appearance.defaultMapType],
-                    widgetID: this.props.widgetID,
+                    widgetID: props.widgetID,
+                    zoom: behaviour.zoom,
                 };
                 return (React.createElement(Map_1.default, __assign({}, mapProps), 
-                    React.createElement(Marker_1.default, null)
-                ));
+                    React.createElement(Marker_1.default, null), 
+                    this.getMarkers(props.data)));
             }
             else {
                 return (React.createElement("div", null, "Loading ..."));
@@ -129,10 +126,34 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
                 isScriptLoaded: false,
             });
         };
+        Wrapper.prototype.addCache = function (entry) {
+            if (window.loadedScript && window.loadedScript.indexOf(entry) < 0) {
+                window.loadedScript.push(entry);
+            }
+        };
+        Wrapper.prototype.getMarkers = function (data) {
+            if (data.length > 0) {
+                var key_1 = 0;
+                return data.map(function (coordinates) {
+                    key_1++;
+                    var position = new google.maps.LatLng(coordinates.latitude, coordinates.longitude);
+                    return (React.createElement(Marker_1.default, {position: position, key: key_1}));
+                });
+            }
+        };
+        Wrapper.prototype.getInitialCenter = function () {
+            var behaviour = this.props.behaviour;
+            var data = this.props.data;
+            if (data.length === 1 && behaviour.defaultLat === 0.0 && behaviour.defaultLng === 0.0) {
+                return new google.maps.LatLng(data[0].latitude, data[0].longitude);
+            }
+            return new google.maps.LatLng(behaviour.defaultLat, behaviour.defaultLng);
+        };
         Wrapper.defaultProps = {
             apiKey: "",
             appearance: {},
             behaviour: {},
+            data: [],
             height: 0,
             widgetID: "GoogleMaps",
             width: 0,

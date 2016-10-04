@@ -97,6 +97,9 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                 var center = new google.maps.LatLng(curr.lat(), curr.lng());
                 var mapConfig = Polyfills_1.ObjectAssign({}, {
                     center: center,
+                    mapTypeControlOption: {
+                        style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+                    },
                     mapTypeId: props.mapTypeId,
                     zoom: props.zoom,
                 });

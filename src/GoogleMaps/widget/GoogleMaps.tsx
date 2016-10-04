@@ -27,6 +27,11 @@ import ReactDOM = require("GoogleMaps/lib/react-dom");
 // import components
 import Wrapper, { MapAppearance, MapBehaviour } from "./components/Wrapper";
 
+export interface MapData {
+    latitude: number;
+    longitude: number;
+}
+
 export default class GoogleMaps extends _WidgetBase {
     /**
      * Parameters configured in the Modeler
@@ -41,14 +46,18 @@ export default class GoogleMaps extends _WidgetBase {
     private apiAccessKey: string;
     private defaultLat: string;
     private defaultLng: string;
+    private useContextObject: boolean;
+    private zoom: number;
     // Data source
     private mapEntity: string;
+    private latAttr: string;
+    private lngAttr: string;
 
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;
-    private handles: any[];
     private behaviour: MapBehaviour;
     private appearance: MapAppearance;
+    private data: Array<MapData>;
 
     /**
      * The TypeScript constructor, not the dojo constructor.
@@ -74,8 +83,9 @@ export default class GoogleMaps extends _WidgetBase {
         // initialize widget component props
         this.behaviour = {
             apiAccessKey: this.apiAccessKey,
-            defaultLat: this.defaultLat,
-            defaultLng: this.defaultLng,
+            defaultLat: Number(this.defaultLat),
+            defaultLng: Number(this.defaultLng),
+            zoom: this.zoom,
         };
         this.appearance = {
             defaultMapType: this.defaultMapType,
@@ -93,6 +103,10 @@ export default class GoogleMaps extends _WidgetBase {
     public update(obj: mendix.lib.MxObject, callback?: Function) {
         logger.debug(this.id + ".update");
         this.contextObj = obj;
+
+        if (this.useContextObject) {
+            this.data.push(this.fetchDataFromMxObject(this.contextObj));
+        }
 
         this._updateRendering(callback);
         this._resetSubscriptions();
@@ -123,9 +137,10 @@ export default class GoogleMaps extends _WidgetBase {
                     apiKey={this.apiAccessKey}
                     appearance={this.appearance}
                     behaviour={this.behaviour}
+                    data={this.data}
+                    height={this.mapHeight}
                     widgetID={this.id}
                     width={this.mapWidth}
-                    height={this.mapHeight}
                 />,
                 this.domNode
             );
@@ -133,39 +148,37 @@ export default class GoogleMaps extends _WidgetBase {
         // The callback, coming from update, needs to be executed, to let the page know it finished rendering
         mxLang.nullExec(callback);
     }
-    // Remove subscriptions
-    private _unsubscribe () {
-        if (this.handles) {
-            for (let handle of this.handles) {
-                mx.data.unsubscribe(handle);
-            }
-            this.handles = [];
-        }
-    }
     // Reset subscriptions.
     private _resetSubscriptions () {
         logger.debug(this.id + "._resetSubscriptions");
-        // Release handles on previous object, if any.
-        this._unsubscribe();
         // When a mendix object exists create subscriptions.
         if (this.contextObj) {
-            let objectHandle = mx.data.subscribe({
-                callback: dojoLang.hitch(this, (guid: string) => {
-                    this._updateRendering();
+            logger.debug(this.id + "._resetSubscriptions subscribe", this.contextObj.getGuid());
+            this.subscribe({
+                callback: dojoLang.hitch(this, (guid) => {
+                    // this.fetchMarkers();
                 }),
                 guid: this.contextObj.getGuid(),
             });
-
-            // let attrHandle = mx.data.subscribe({
-            //     attr: this.backgroundColor,
-            //     callback: dojoLang.hitch(this, function (guid, attr, attrValue) {
-            //         this._updateRendering();
-            //     }),
-            //     guid: this.contextObj.getGuid(),
-            // });
-
-            this.handles = [ objectHandle ];
+        } else {
+            this.subscribe({
+                callback: dojoLang.hitch(this, (entity) => {
+                    // this.fetchMarkers();
+                }),
+                entity: this.mapEntity,
+                guid: null,
+            });
         }
+    }
+    private fetchDataFromMxObject(object: mendix.lib.MxObject) {
+        logger.debug(this.id, "fetchDataFromMxObject");
+        let coordinates: MapData = {latitude: null, longitude: null};
+        if (object) {
+            coordinates.latitude = Number(object.get(this.latAttr));
+            coordinates.longitude = Number(object.get(this.lngAttr));
+            // TODO: consider coordinates retrieved over association
+        }
+        return coordinates ? coordinates : null;
     }
 }
 
@@ -178,6 +191,7 @@ let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], 
     // Implement to initialize non-primitive properties.
     result.constructor = function() {
         logger.debug( this.id + ".constructor");
+        this.data = [];
     };
     for (let i in Source.prototype) {
         if (i !== "constructor" && Source.prototype.hasOwnProperty(i)) {

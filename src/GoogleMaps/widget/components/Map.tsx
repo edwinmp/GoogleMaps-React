@@ -200,6 +200,9 @@ export default class Map extends React.Component<MapProps, MapState> {
 
       let mapConfig = ObjectAssign({}, {
         center,
+        mapTypeControlOption: {
+          style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
+        },
         mapTypeId: props.mapTypeId,
         zoom: props.zoom,
       }) as google.maps.MapOptions;
