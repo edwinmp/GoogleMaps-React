@@ -1,11 +1,11 @@
-declare var window: IWindow;
+declare var window: WindowExtension;
 // import dependencies
 import * as React from "GoogleMaps/lib/react";
 
 // import components
 import Map, {MapProps} from "./Map";
 
-interface IWindow extends Window {
+interface WindowExtension extends Window {
     loadedScript: Array<string>;
 }
 interface WrapperProps {

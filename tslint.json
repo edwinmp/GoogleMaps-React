@@ -3,6 +3,10 @@
   "rules": {
     // Development rules mendix web modeler team
     "class-name": true,
+    "interface-name": [
+      false,
+      "always-prefix"
+    ],
     "comment-format": [
       true,
       "check-space"
