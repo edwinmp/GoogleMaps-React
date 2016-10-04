@@ -25,7 +25,7 @@ import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 // import components
-import Wrapper, { IMapBehaviour } from "./components/Wrapper";
+import Wrapper, { MapAppearance, MapBehaviour } from "./components/Wrapper";
 
 export default class GoogleMaps extends _WidgetBase {
     /**
@@ -36,6 +36,7 @@ export default class GoogleMaps extends _WidgetBase {
     // Appearance
     private mapHeight: number;
     private mapWidth: number;
+    private defaultMapType: string;
     // Behaviour
     private apiAccessKey: string;
     private defaultLat: string;
@@ -44,7 +45,8 @@ export default class GoogleMaps extends _WidgetBase {
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;
     private handles: any[];
-    private behaviour: IMapBehaviour;
+    private behaviour: MapBehaviour;
+    private appearance: MapAppearance;
 
     /**
      * The TypeScript constructor, not the dojo constructor.
@@ -72,6 +74,9 @@ export default class GoogleMaps extends _WidgetBase {
             apiAccessKey: this.apiAccessKey,
             defaultLat: this.defaultLat,
             defaultLng: this.defaultLng,
+        };
+        this.appearance = {
+            defaultMapType: this.defaultMapType,
         };
 
         this._updateRendering();
@@ -114,6 +119,7 @@ export default class GoogleMaps extends _WidgetBase {
             ReactDOM.render(
                 <Wrapper
                     apiKey={this.apiAccessKey}
+                    appearance={this.appearance}
                     behaviour={this.behaviour}
                     widgetID={this.id}
                     width={this.mapWidth}
