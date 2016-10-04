@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom", "../../lib/Polyfills", "dojo/Deferred"], function (require, exports, React, ReactDOM, Polyfills_1, dojoDeferred) {
+define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom", "../../lib/Polyfills", "../utils/utils", "dojo/Deferred"], function (require, exports, React, ReactDOM, Polyfills_1, utils_1, dojoDeferred) {
     "use strict";
     var mapStyles = {
         container: {
@@ -108,19 +108,11 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                 this.forceUpdate();
             }
         };
-        Map.prototype.camelize = function (str) {
-            str = str.replace(/\W+(.)/g, function (match, chr) {
-                return chr.toUpperCase();
-            });
-            return str.replace(/(?:^|[-_])(\w)/g, function (_, c) {
-                return c ? c.toUpperCase() : "";
-            });
-        };
         Map.prototype.handleEvent = function (evtName) {
             var _this = this;
             logger.debug(this.loggerNode + ".handleEvent");
             var timeout;
-            var handlerName = "on" + this.camelize(evtName);
+            var handlerName = "on" + utils_1.toCamelCase(evtName);
             return function (e) {
                 if (timeout) {
                     clearTimeout(timeout);
@@ -154,11 +146,14 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                 return;
             }
             return React.Children.map(children, function (c) {
-                return React.cloneElement(c, {
-                    google: _this.props.google,
-                    map: _this.map,
-                    mapCenter: _this.state.currentLocation,
-                });
+                var child = c;
+                if (React.isValidElement(c)) {
+                    return React.cloneElement(child, {
+                        google: _this.props.google,
+                        map: _this.map,
+                        mapCenter: _this.state.currentLocation,
+                    });
+                }
             });
         };
         Map.defaultProps = {
