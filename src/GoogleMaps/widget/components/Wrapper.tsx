@@ -4,6 +4,7 @@ import * as React from "GoogleMaps/lib/react";
 
 // import components
 import Map, {MapProps} from "./Map";
+import Marker from "./Marker";
 
 interface WindowExtension extends Window {
     loadedScript: Array<string>;
@@ -114,9 +115,9 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
                 widgetID: this.props.widgetID,
             };
             return (
-                <Map
-                    {...mapProps}
-                />
+                <Map {...mapProps} >
+                    <Marker />
+                </Map>
             );
         } else {
             return (

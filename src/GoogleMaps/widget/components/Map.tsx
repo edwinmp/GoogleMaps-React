@@ -6,6 +6,7 @@ import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 // import Utilities
 import {ObjectAssign} from "../../lib/Polyfills";
+import {toCamelCase} from "../utils/utils";
 
 import * as dojoDeferred from "dojo/Deferred";
 
@@ -213,23 +214,6 @@ export default class Map extends React.Component<MapProps, MapState> {
     }
   }
   /**
-   * Convert a string to camel case
-   * 
-   * @private
-   * @param {string} str
-   * @returns
-   * 
-   * @memberOf Map
-   */
-  private camelize(str: string) {
-    str = str.replace(/\W+(.)/g, (match, chr) => {
-            return chr.toUpperCase();
-        });
-    return str.replace (/(?:^|[-_])(\w)/g, (_, c) => {
-        return c ? c.toUpperCase () : "";
-      });
-  }
-  /**
    * Returns a reference to the function to execute for each registered event
    * Makes sure each function is run asynchronously
    * 
@@ -243,7 +227,7 @@ export default class Map extends React.Component<MapProps, MapState> {
     logger.debug(this.loggerNode + ".handleEvent");
     let timeout: number;
     // get camelized version of event name... event props are represented this way
-    const handlerName = `on${this.camelize(evtName)}`;
+    const handlerName = `on${toCamelCase(evtName)}`;
 
     return (e: Event) => {
       if (timeout) {
@@ -295,11 +279,14 @@ export default class Map extends React.Component<MapProps, MapState> {
     if (!children) { return; }
 
     return React.Children.map(children, (c: React.ReactElement<any>) => {
-      return React.cloneElement(c, {
-        google: this.props.google,
-        map: this.map,
-        mapCenter: this.state.currentLocation,
-      });
+      const child = c;
+      if (React.isValidElement(c)) {
+        return React.cloneElement(child, {
+                google: this.props.google,
+                map: this.map,
+                mapCenter: this.state.currentLocation,
+              });
+      }
     });
   }
 };

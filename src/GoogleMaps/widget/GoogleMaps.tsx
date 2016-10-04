@@ -41,6 +41,8 @@ export default class GoogleMaps extends _WidgetBase {
     private apiAccessKey: string;
     private defaultLat: string;
     private defaultLng: string;
+    // Data source
+    private mapEntity: string;
 
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;

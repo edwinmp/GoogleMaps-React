@@ -11,7 +11,7 @@ var __assign = (this && this.__assign) || Object.assign || function(t) {
     }
     return t;
 };
-define(["require", "exports", "GoogleMaps/lib/react", "./Map"], function (require, exports, React, Map_1) {
+define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], function (require, exports, React, Map_1, Marker_1) {
     "use strict";
     var Wrapper = (function (_super) {
         __extends(Wrapper, _super);
@@ -72,7 +72,9 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map"], function (requir
                     mapTypeId: google.maps.MapTypeId[appearance.defaultMapType],
                     widgetID: this.props.widgetID,
                 };
-                return (React.createElement(Map_1.default, __assign({}, mapProps)));
+                return (React.createElement(Map_1.default, __assign({}, mapProps), 
+                    React.createElement(Marker_1.default, null)
+                ));
             }
             else {
                 return (React.createElement("div", null, "Loading ..."));
