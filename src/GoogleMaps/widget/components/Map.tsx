@@ -119,14 +119,7 @@ export default class Map extends React.Component<MapProps, MapState> {
     }
     this.loadMap();
   }
-  /**
-   * Life cycle: Called after component has been updated.
-   * 
-   * @param {IMapProps} prevProps
-   * @param {IMapState} prevState
-   * 
-   * @memberOf Map
-   */
+
   public componentDidUpdate(prevProps: MapProps, prevState: MapState) {
     logger.debug(this.loggerNode + ".componentDidUpdate");
     if (prevProps.google !== this.props.google) {
@@ -142,12 +135,7 @@ export default class Map extends React.Component<MapProps, MapState> {
       this.recenterMap();
     }
   }
-  /**
-   * Life cycle: Called before component is destroyed
-   * 
-   * 
-   * @memberOf Map
-   */
+
   public componentWillUnmount() {
     logger.debug(this.loggerNode + ".componentWillUnmount");
     if (this.geoPromise) {
@@ -157,13 +145,7 @@ export default class Map extends React.Component<MapProps, MapState> {
       google.maps.event.removeListener(this.listeners[e]);
     });
   }
-  /**
-   * Life cycle: Called to render the component
-   * 
-   * @returns
-   * 
-   * @memberOf Map
-   */
+
   public render() {
     logger.debug(this.loggerNode + ".render");
     const style = ObjectAssign({}, mapStyles.map, this.props.style);
@@ -183,9 +165,6 @@ export default class Map extends React.Component<MapProps, MapState> {
    * Initialize map with specific configs and render it to the dom
    * Also register map events after initialization 
    * 
-   * @private
-   * 
-   * @memberOf Map
    */
   private loadMap() {
     logger.debug(this.loggerNode + ".loadMap");
@@ -219,12 +198,7 @@ export default class Map extends React.Component<MapProps, MapState> {
   /**
    * Returns a reference to the function to execute for each registered event
    * Makes sure each function is run asynchronously
-   * 
-   * @private
-   * @param {string} evtName
-   * @returns
-   * 
-   * @memberOf Map
+   *
    */
   private handleEvent(evtName: string) {
     logger.debug(this.loggerNode + ".handleEvent");
@@ -248,10 +222,6 @@ export default class Map extends React.Component<MapProps, MapState> {
   /**
    * Sets the current location based on the specified coordinates
    * 
-   * @private
-   * @returns
-   * 
-   * @memberOf Map
    */
   private recenterMap() {
     logger.debug(this.loggerNode + ".recenterMap");
@@ -270,10 +240,6 @@ export default class Map extends React.Component<MapProps, MapState> {
    * Used to render Markers and InfoWindows
    * Children are cloned with the relevant props passed in
    * 
-   * @private
-   * @returns
-   * 
-   * @memberOf Map
    */
   private renderChildren() {
     logger.debug(this.loggerNode + ".renderChildren");

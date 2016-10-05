@@ -27,15 +27,11 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
             this.appearance = {
                 defaultMapType: this.defaultMapType,
             };
-            this._updateRendering();
         };
-        GoogleMaps.prototype.update = function (obj, callback) {
+        GoogleMaps.prototype.update = function (mxObject, callback) {
             logger.debug(this.id + ".update");
-            this.contextObj = obj;
-            if (this.useContextObject) {
-                this.data.push(this.fetchDataFromMxObject(this.contextObj));
-            }
-            this._updateRendering(callback);
+            this.contextObj = mxObject;
+            this.setMapData(callback);
             this._resetSubscriptions();
         };
         GoogleMaps.prototype.uninitialize = function () {
@@ -44,17 +40,16 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
         };
         GoogleMaps.prototype._updateRendering = function (callback) {
             logger.debug(this.id + ".updateRendering");
-            if (this.contextObj !== null && typeof (this.contextObj) !== "undefined") {
-                ReactDOM.render(React.createElement(Wrapper_1.default, {apiKey: this.apiAccessKey, appearance: this.appearance, behaviour: this.behaviour, data: this.data, height: this.mapHeight, widgetID: this.id, width: this.mapWidth}), this.domNode);
-            }
+            ReactDOM.render(React.createElement(Wrapper_1.default, {apiKey: this.apiAccessKey, appearance: this.appearance, behaviour: this.behaviour, data: this.data, height: this.mapHeight, widgetID: this.id, width: this.mapWidth}), this.domNode);
             mxLang.nullExec(callback);
         };
         GoogleMaps.prototype._resetSubscriptions = function () {
+            var _this = this;
             logger.debug(this.id + "._resetSubscriptions");
             if (this.contextObj) {
-                logger.debug(this.id + "._resetSubscriptions subscribe", this.contextObj.getGuid());
                 this.subscribe({
                     callback: dojoLang.hitch(this, function (guid) {
+                        _this.setMapData();
                     }),
                     guid: this.contextObj.getGuid(),
                 });
@@ -62,20 +57,52 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
             else {
                 this.subscribe({
                     callback: dojoLang.hitch(this, function (entity) {
+                        _this.setMapData();
                     }),
                     entity: this.mapEntity,
                     guid: null,
                 });
             }
         };
+        GoogleMaps.prototype.setMapData = function (callback) {
+            logger.debug(this.id + ".setMapData");
+            if (this.useContextObject) {
+                this.data.push(this.fetchDataFromMxObject(this.contextObj));
+                this._updateRendering(callback);
+            }
+            else {
+                this.fetchDataFromDatabase(callback);
+            }
+        };
         GoogleMaps.prototype.fetchDataFromMxObject = function (object) {
-            logger.debug(this.id, "fetchDataFromMxObject");
+            logger.debug(this.id + "fetchDataFromMxObject");
             var coordinates = { latitude: null, longitude: null };
             if (object) {
                 coordinates.latitude = Number(object.get(this.latAttr));
                 coordinates.longitude = Number(object.get(this.lngAttr));
             }
             return coordinates ? coordinates : null;
+        };
+        GoogleMaps.prototype.fetchDataFromDatabase = function (callback) {
+            var _this = this;
+            logger.debug(this.id + "fetchDataFromDatabase");
+            var xpath = "//" + this.mapEntity + this.xpathConstraint;
+            if (!this.contextObj && xpath.indexOf("[%CurrentObject%]") > -1) {
+                return;
+            }
+            if (this.contextObj) {
+                xpath = xpath.replace("[%CurrentObject%]", this.contextObj.getGuid());
+            }
+            mx.data.get({
+                callback: dojoLang.hitch(this, function (objects) {
+                    _this.data = objects.map(function (mxObject) {
+                        return _this.fetchDataFromMxObject(mxObject);
+                    });
+                    _this._updateRendering(callback);
+                }),
+                error: function (error) { logger.debug("Error retrieving data"); },
+                xpath: xpath,
+            });
         };
         return GoogleMaps;
     }(_WidgetBase));

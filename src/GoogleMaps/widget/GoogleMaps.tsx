@@ -1,19 +1,3 @@
-/*
-    GoogleMaps
-    ========================
-
-    @file      : GoogleMaps.js
-    @version   : 1.0.0
-    @author    : Edwin P. Magezi
-    @date      : 9/19/2016
-    @copyright : Flock of Birds
-    @license   : MIT
-
-    Documentation
-    ========================
-    Google Maps Widget built with React-TypeScript .
-*/
-
 // import dependent modules
 import * as dojoDeclare from "dojo/_base/declare";
 import * as dojoLang from "dojo/_base/lang";
@@ -52,6 +36,7 @@ export default class GoogleMaps extends _WidgetBase {
     private mapEntity: string;
     private latAttr: string;
     private lngAttr: string;
+    private xpathConstraint: string;
 
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;
@@ -91,24 +76,17 @@ export default class GoogleMaps extends _WidgetBase {
             defaultMapType: this.defaultMapType,
         };
 
-        this._updateRendering();
+        // this._updateRendering();
     }
 
     /**
      * mxui.widget._WidgetBase.update is called when context is changed or initialized.
      * Implement to re-render and / or fetch data.
-     * @param obj
-     * @param callback
      */
-    public update(obj: mendix.lib.MxObject, callback?: Function) {
+    public update(mxObject: mendix.lib.MxObject, callback?: Function) {
         logger.debug(this.id + ".update");
-        this.contextObj = obj;
-
-        if (this.useContextObject) {
-            this.data.push(this.fetchDataFromMxObject(this.contextObj));
-        }
-
-        this._updateRendering(callback);
+        this.contextObj = mxObject;
+        this.setMapData(callback);
         this._resetSubscriptions();
     }
 
@@ -130,55 +108,81 @@ export default class GoogleMaps extends _WidgetBase {
      */
     private _updateRendering (callback?: Function) {
         logger.debug(this.id + ".updateRendering");
-        if (this.contextObj !== null && typeof(this.contextObj) !== "undefined") {
-            // Render react component
-            ReactDOM.render(
-                <Wrapper
-                    apiKey={this.apiAccessKey}
-                    appearance={this.appearance}
-                    behaviour={this.behaviour}
-                    data={this.data}
-                    height={this.mapHeight}
-                    widgetID={this.id}
-                    width={this.mapWidth}
-                />,
-                this.domNode
-            );
-        }
+        // Render react component
+        ReactDOM.render(
+            <Wrapper
+                apiKey={this.apiAccessKey}
+                appearance={this.appearance}
+                behaviour={this.behaviour}
+                data={this.data}
+                height={this.mapHeight}
+                widgetID={this.id}
+                width={this.mapWidth}
+            />,
+            this.domNode
+        );
         // The callback, coming from update, needs to be executed, to let the page know it finished rendering
         mxLang.nullExec(callback);
     }
     // Reset subscriptions.
     private _resetSubscriptions () {
         logger.debug(this.id + "._resetSubscriptions");
-        // When a mendix object exists create subscriptions.
         if (this.contextObj) {
-            logger.debug(this.id + "._resetSubscriptions subscribe", this.contextObj.getGuid());
             this.subscribe({
                 callback: dojoLang.hitch(this, (guid) => {
-                    // this.fetchMarkers();
+                    this.setMapData();
                 }),
                 guid: this.contextObj.getGuid(),
             });
         } else {
             this.subscribe({
                 callback: dojoLang.hitch(this, (entity) => {
-                    // this.fetchMarkers();
+                    this.setMapData();
                 }),
                 entity: this.mapEntity,
                 guid: null,
             });
         }
     }
+    private setMapData(callback?: Function) {
+        logger.debug(this.id + ".setMapData");
+        if (this.useContextObject) {
+            this.data.push(this.fetchDataFromMxObject(this.contextObj));
+            this._updateRendering(callback);
+        } else {
+            this.fetchDataFromDatabase(callback);
+        }
+    }
     private fetchDataFromMxObject(object: mendix.lib.MxObject) {
-        logger.debug(this.id, "fetchDataFromMxObject");
+        logger.debug(this.id + "fetchDataFromMxObject");
         let coordinates: MapData = {latitude: null, longitude: null};
         if (object) {
             coordinates.latitude = Number(object.get(this.latAttr));
             coordinates.longitude = Number(object.get(this.lngAttr));
-            // TODO: consider coordinates retrieved over association
+            // TODO: consider coordinates retrieved over association: Not in this function though
         }
         return coordinates ? coordinates : null;
+    }
+    private fetchDataFromDatabase(callback?: Function) {
+        logger.debug(this.id + "fetchDataFromDatabase");
+        let xpath = "//" + this.mapEntity + this.xpathConstraint;
+        if (!this.contextObj && xpath.indexOf("[%CurrentObject%]") > -1) {
+            // TODO: Add error alert for this scenario.
+            return;
+        }
+        if (this.contextObj) {
+            xpath = xpath.replace("[%CurrentObject%]", this.contextObj.getGuid());
+        }
+        mx.data.get({
+            callback: dojoLang.hitch(this, (objects) => {
+                this.data = objects.map((mxObject: mendix.lib.MxObject) => {
+                    return this.fetchDataFromMxObject(mxObject);
+                });
+                this._updateRendering(callback);
+            }),
+            error: (error) => { logger.debug("Error retrieving data"); }, // TODO: Add alert
+            xpath,
+        });
     }
 }
 

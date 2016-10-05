@@ -70,7 +70,7 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
 
         // load google api script
         const src = this.getGoogleMapsApiUrl();
-        if ((window.loadedScript && window.loadedScript.indexOf(src) < 0) || typeof google === "undefined") {
+        if (typeof google === "undefined") {
             this.google = null;
             this.state = {
                 alert: { hasAlert: false },

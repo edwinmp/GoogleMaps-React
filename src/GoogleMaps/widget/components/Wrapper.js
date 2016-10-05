@@ -29,7 +29,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
             this.onScriptLoadingError = this.onScriptLoadingError.bind(this);
             this.alertDiv = this.alertDiv.bind(this);
             var src = this.getGoogleMapsApiUrl();
-            if ((window.loadedScript && window.loadedScript.indexOf(src) < 0) || typeof google === "undefined") {
+            if (typeof google === "undefined") {
                 this.google = null;
                 this.state = {
                     alert: { hasAlert: false },
