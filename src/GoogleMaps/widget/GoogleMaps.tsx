@@ -96,16 +96,9 @@ export default class GoogleMaps extends _WidgetBase {
      */
     public uninitialize() {
         logger.debug(this.id + ".uninitialize");
-        // Clean up listeners, helper objects, etc.
-        // There is no need to remove listeners added with this.connect / this.subscribe / this.own.
         ReactDOM.unmountComponentAtNode(this.domNode);
     }
 
-    /**
-     * Render the widget interface.
-     * @param callback
-     * @private
-     */
     private _updateRendering (callback?: Function) {
         logger.debug(this.id + ".updateRendering");
         // Render react component
@@ -121,10 +114,8 @@ export default class GoogleMaps extends _WidgetBase {
             />,
             this.domNode
         );
-        // The callback, coming from update, needs to be executed, to let the page know it finished rendering
         mxLang.nullExec(callback);
     }
-    // Reset subscriptions.
     private _resetSubscriptions () {
         logger.debug(this.id + "._resetSubscriptions");
         if (this.contextObj) {
