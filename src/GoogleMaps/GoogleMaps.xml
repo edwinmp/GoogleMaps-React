@@ -137,7 +137,7 @@
             <description>Microflow that will be exectuted when you click on a marker. Takes the entity of the Objects as input parameter</description>
             <returnType type="Void"></returnType>
         </property>
-        <property key="latAttr" type="attribute" entityProperty="mapEntity" required="true" isPath="optional" pathType="reference">
+        <property key="latAttr" type="attribute" entityProperty="mapEntity" required="true">
             <caption>Latitude attribute</caption>
             <category>Data source</category>
             <description>The latitude attribute.</description>
@@ -148,7 +148,7 @@
                 <attributeType name="String"/>
             </attributeTypes>
         </property>
-        <property key="lngAttr" type="attribute" entityProperty="mapEntity" required="true" isPath="optional" pathType="reference">
+        <property key="lngAttr" type="attribute" entityProperty="mapEntity" required="true">
             <caption>Longtitude attribute</caption>
             <category>Data source</category>
             <description>The longtitude attribute.</description>
