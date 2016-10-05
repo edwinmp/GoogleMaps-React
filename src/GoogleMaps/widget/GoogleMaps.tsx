@@ -1,19 +1,3 @@
-/*
-    GoogleMaps
-    ========================
-
-    @file      : GoogleMaps.js
-    @version   : 1.0.0
-    @author    : Edwin P. Magezi
-    @date      : 9/19/2016
-    @copyright : Flock of Birds
-    @license   : MIT
-
-    Documentation
-    ========================
-    Google Maps Widget built with React-TypeScript .
-*/
-
 // import dependent modules
 import * as dojoDeclare from "dojo/_base/declare";
 import * as dojoLang from "dojo/_base/lang";
@@ -26,6 +10,11 @@ import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 // import components
 import Wrapper, { MapAppearance, MapBehaviour } from "./components/Wrapper";
+
+export interface MapData {
+    latitude: number;
+    longitude: number;
+}
 
 export default class GoogleMaps extends _WidgetBase {
     /**
@@ -41,14 +30,19 @@ export default class GoogleMaps extends _WidgetBase {
     private apiAccessKey: string;
     private defaultLat: string;
     private defaultLng: string;
+    private useContextObject: boolean;
+    private zoom: number;
     // Data source
     private mapEntity: string;
+    private latAttr: string;
+    private lngAttr: string;
+    private xpathConstraint: string;
 
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;
-    private handles: any[];
     private behaviour: MapBehaviour;
     private appearance: MapAppearance;
+    private data: Array<MapData>;
 
     /**
      * The TypeScript constructor, not the dojo constructor.
@@ -74,27 +68,25 @@ export default class GoogleMaps extends _WidgetBase {
         // initialize widget component props
         this.behaviour = {
             apiAccessKey: this.apiAccessKey,
-            defaultLat: this.defaultLat,
-            defaultLng: this.defaultLng,
+            defaultLat: Number(this.defaultLat),
+            defaultLng: Number(this.defaultLng),
+            zoom: this.zoom,
         };
         this.appearance = {
             defaultMapType: this.defaultMapType,
         };
 
-        this._updateRendering();
+        // this._updateRendering();
     }
 
     /**
      * mxui.widget._WidgetBase.update is called when context is changed or initialized.
      * Implement to re-render and / or fetch data.
-     * @param obj
-     * @param callback
      */
-    public update(obj: mendix.lib.MxObject, callback?: Function) {
+    public update(mxObject: mendix.lib.MxObject, callback?: Function) {
         logger.debug(this.id + ".update");
-        this.contextObj = obj;
-
-        this._updateRendering(callback);
+        this.contextObj = mxObject;
+        this.setMapData(callback);
         this._resetSubscriptions();
     }
 
@@ -104,68 +96,84 @@ export default class GoogleMaps extends _WidgetBase {
      */
     public uninitialize() {
         logger.debug(this.id + ".uninitialize");
-        // Clean up listeners, helper objects, etc.
-        // There is no need to remove listeners added with this.connect / this.subscribe / this.own.
         ReactDOM.unmountComponentAtNode(this.domNode);
     }
 
-    /**
-     * Render the widget interface.
-     * @param callback
-     * @private
-     */
     private _updateRendering (callback?: Function) {
         logger.debug(this.id + ".updateRendering");
-        if (this.contextObj !== null && typeof(this.contextObj) !== "undefined") {
-            // Render react component
-            ReactDOM.render(
-                <Wrapper
-                    apiKey={this.apiAccessKey}
-                    appearance={this.appearance}
-                    behaviour={this.behaviour}
-                    widgetID={this.id}
-                    width={this.mapWidth}
-                    height={this.mapHeight}
-                />,
-                this.domNode
-            );
-        }
-        // The callback, coming from update, needs to be executed, to let the page know it finished rendering
+        // Render react component
+        ReactDOM.render(
+            <Wrapper
+                apiKey={this.apiAccessKey}
+                appearance={this.appearance}
+                behaviour={this.behaviour}
+                data={this.data}
+                height={this.mapHeight}
+                widgetID={this.id}
+                width={this.mapWidth}
+            />,
+            this.domNode
+        );
         mxLang.nullExec(callback);
     }
-    // Remove subscriptions
-    private _unsubscribe () {
-        if (this.handles) {
-            for (let handle of this.handles) {
-                mx.data.unsubscribe(handle);
-            }
-            this.handles = [];
-        }
-    }
-    // Reset subscriptions.
     private _resetSubscriptions () {
         logger.debug(this.id + "._resetSubscriptions");
-        // Release handles on previous object, if any.
-        this._unsubscribe();
-        // When a mendix object exists create subscriptions.
         if (this.contextObj) {
-            let objectHandle = mx.data.subscribe({
-                callback: dojoLang.hitch(this, (guid: string) => {
-                    this._updateRendering();
+            this.subscribe({
+                callback: dojoLang.hitch(this, (guid) => {
+                    this.setMapData();
                 }),
                 guid: this.contextObj.getGuid(),
             });
-
-            // let attrHandle = mx.data.subscribe({
-            //     attr: this.backgroundColor,
-            //     callback: dojoLang.hitch(this, function (guid, attr, attrValue) {
-            //         this._updateRendering();
-            //     }),
-            //     guid: this.contextObj.getGuid(),
-            // });
-
-            this.handles = [ objectHandle ];
+        } else {
+            this.subscribe({
+                callback: dojoLang.hitch(this, (entity) => {
+                    this.setMapData();
+                }),
+                entity: this.mapEntity,
+                guid: null,
+            });
         }
+    }
+    private setMapData(callback?: Function) {
+        logger.debug(this.id + ".setMapData");
+        if (this.useContextObject) {
+            this.data.push(this.fetchDataFromMxObject(this.contextObj));
+            this._updateRendering(callback);
+        } else {
+            this.fetchDataFromDatabase(callback);
+        }
+    }
+    private fetchDataFromMxObject(object: mendix.lib.MxObject) {
+        logger.debug(this.id + "fetchDataFromMxObject");
+        let coordinates: MapData = {latitude: null, longitude: null};
+        if (object) {
+            coordinates.latitude = Number(object.get(this.latAttr));
+            coordinates.longitude = Number(object.get(this.lngAttr));
+            // TODO: consider coordinates retrieved over association: Not in this function though
+        }
+        return coordinates ? coordinates : null;
+    }
+    private fetchDataFromDatabase(callback?: Function) {
+        logger.debug(this.id + "fetchDataFromDatabase");
+        let xpath = "//" + this.mapEntity + this.xpathConstraint;
+        if (!this.contextObj && xpath.indexOf("[%CurrentObject%]") > -1) {
+            // TODO: Add error alert for this scenario.
+            return;
+        }
+        if (this.contextObj) {
+            xpath = xpath.replace("[%CurrentObject%]", this.contextObj.getGuid());
+        }
+        mx.data.get({
+            callback: dojoLang.hitch(this, (objects) => {
+                this.data = objects.map((mxObject: mendix.lib.MxObject) => {
+                    return this.fetchDataFromMxObject(mxObject);
+                });
+                this._updateRendering(callback);
+            }),
+            error: (error) => { logger.debug("Error retrieving data"); }, // TODO: Add alert
+            xpath,
+        });
     }
 }
 
@@ -178,6 +186,7 @@ let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], 
     // Implement to initialize non-primitive properties.
     result.constructor = function() {
         logger.debug( this.id + ".constructor");
+        this.data = [];
     };
     for (let i in Source.prototype) {
         if (i !== "constructor" && Source.prototype.hasOwnProperty(i)) {

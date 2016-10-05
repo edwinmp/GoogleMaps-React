@@ -3,6 +3,7 @@ declare var window: WindowExtension;
 import * as React from "GoogleMaps/lib/react";
 
 // import components
+import {MapData} from "../GoogleMaps";
 import Map, {MapProps} from "./Map";
 import Marker from "./Marker";
 
@@ -13,6 +14,7 @@ interface WrapperProps {
     appearance: MapAppearance;
     apiKey: string;
     behaviour: MapBehaviour;
+    data: Array<MapData>;
     height: number;
     widgetID: string;
     width: number;
@@ -27,8 +29,9 @@ interface Alert {
 }
 export interface MapBehaviour {
     apiAccessKey?: string;
-    defaultLat?: string;
-    defaultLng?: string;
+    defaultLat?: number;
+    defaultLng?: number;
+    zoom?: number;
 }
 export interface MapAppearance {
     defaultMapType?: string;
@@ -39,6 +42,7 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         apiKey: "",
         appearance: {},
         behaviour: {},
+        data: [],
         height: 0,
         widgetID: "GoogleMaps",
         width: 0,
@@ -66,7 +70,7 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
 
         // load google api script
         const src = this.getGoogleMapsApiUrl();
-        if ((window.loadedScript && window.loadedScript.indexOf(src) < 0) || typeof google === "undefined") {
+        if (typeof google === "undefined") {
             this.google = null;
             this.state = {
                 alert: { hasAlert: false },
@@ -105,18 +109,21 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
         if (this.state.isScriptLoaded) {
-            const behaviour = this.props.behaviour;
-            const appearance = this.props.appearance;
+            const props = this.props;
+            const behaviour = props.behaviour;
+            const appearance = props.appearance;
             const mapProps: MapProps = {
                 centerAroundCurrentLocation: false,
                 google,
-                initialCenter: new google.maps.LatLng(Number(behaviour.defaultLat), Number(behaviour.defaultLng)),
+                initialCenter: this.getInitialCenter(),
                 mapTypeId: google.maps.MapTypeId[appearance.defaultMapType as any],
-                widgetID: this.props.widgetID,
+                widgetID: props.widgetID,
+                zoom: behaviour.zoom,
             };
             return (
                 <Map {...mapProps} >
                     <Marker />
+                    {this.getMarkers(props.data)}
                 </Map>
             );
         } else {
@@ -204,9 +211,29 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
      * Keep track of loaded scripts so as not to load them more than once
      * 
      */
-    private addCache = (entry: string) => {
+    private addCache(entry: string) {
         if (window.loadedScript && window.loadedScript.indexOf(entry) < 0) {
             window.loadedScript.push(entry);
         }
-    };
+    }
+    private getMarkers(data: Array<MapData>) {
+        if (data.length > 0) {
+            let key = 0;
+            return data.map((coordinates) => {
+                key++;
+                const position = new google.maps.LatLng(coordinates.latitude, coordinates.longitude);
+                return (
+                    <Marker position={position} key={key}/>
+                );
+            });
+        }
+    }
+    private getInitialCenter(): google.maps.LatLng {
+        const behaviour = this.props.behaviour;
+        const data = this.props.data;
+        if (data.length === 1 && behaviour.defaultLat === 0.0 && behaviour.defaultLng === 0.0) {
+            return new google.maps.LatLng(data[0].latitude, data[0].longitude);
+        }
+        return new google.maps.LatLng(behaviour.defaultLat, behaviour.defaultLng);
+    }
 };
