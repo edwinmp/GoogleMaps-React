@@ -30,9 +30,11 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                 throw new Error(this.loggerNode + ".You must include a 'google' prop & it must not be null");
             }
             this.listeners = [];
+            this.bounds = new google.maps.LatLngBounds();
             this.state = {
                 currentLocation: new google.maps.LatLng(props.initialCenter.lat(), props.initialCenter.lng()),
             };
+            this.setMapBounds = this.setMapBounds.bind(this);
         }
         Map.prototype.componentDidMount = function () {
             var _this = this;
@@ -104,6 +106,8 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                     zoom: props.zoom,
                 });
                 this.map = new maps.Map(node, mapConfig);
+                this.setMapBounds();
+                this.map.fitBounds(this.bounds);
                 evtNames.forEach(function (e) {
                     _this.listeners[e] = _this.map.addListener(e, _this.handleEvent(e));
                 });
@@ -156,6 +160,22 @@ define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"
                         map: _this.map,
                         mapCenter: _this.state.currentLocation,
                     });
+                }
+            });
+        };
+        Map.prototype.setMapBounds = function () {
+            var _this = this;
+            logger.debug(this.loggerNode + ".setMapBounds");
+            var children = this.props.children;
+            if (!children) {
+                return;
+            }
+            return React.Children.map(children, function (c) {
+                var child = c;
+                if (React.isValidElement(c)) {
+                    if (typeof child.props.position !== "undefined") {
+                        _this.bounds.extend(child.props.position);
+                    }
                 }
             });
         };
