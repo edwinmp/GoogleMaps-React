@@ -10,7 +10,7 @@ import Marker from "./Marker";
 interface WindowExtension extends Window {
     loadedScript: Array<string>;
 }
-interface WrapperProps {
+interface WrapperProps extends React.Props<Wrapper> {
     appearance: MapAppearance;
     apiKey: string;
     behaviour: MapBehaviour;
