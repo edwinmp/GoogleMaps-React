@@ -1,4 +1,5 @@
 import * as React from "GoogleMaps/lib/react";
+import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 interface InfoWindowProps extends React.Props<InfoWindow> {
     map?: google.maps.Map;
@@ -19,7 +20,8 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
     }
 
     public componentDidUpdate(prevProps: InfoWindowProps) {
-        const {map} = this.props;
+        const props = this.props;
+        const {map} = props;
 
         if (!google || !map) {
             return;
@@ -29,15 +31,12 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
             this.renderInfoWindow();
         }
 
-        if (this.props.children !== prevProps.children) {
+        if (props.children !== prevProps.children) {
             this.updateContent();
         }
 
-        if ((this.props.visible !== prevProps.visible ||
-            this.props.marker !== prevProps.marker)) {
-            this.props.visible ?
-                this.openWindow() :
-                this.closeWindow();
+        if ((props.visible !== prevProps.visible || props.marker !== prevProps.marker)) {
+            props.visible ? this.openWindow() : this.closeWindow();
         }
     }
 
@@ -50,24 +49,18 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
             return;
         }
 
-        const iw = this.infoWindow = new google.maps.InfoWindow({
-            content: "",
-        });
+        const infoWindow = this.infoWindow = new google.maps.InfoWindow({content: ""});
 
-        google.maps.event.addListener(iw, "closeclick", this.onClose.bind(this));
-        google.maps.event.addListener(iw, "domready", this.onOpen.bind(this));
+        google.maps.event.addListener(infoWindow, "closeclick", this.onClose.bind(this));
+        google.maps.event.addListener(infoWindow, "domready", this.onOpen.bind(this));
     }
 
     private onOpen() {
-        if (this.props.onOpen) {
-            this.props.onOpen();
-        }
+        if (this.props.onOpen) { this.props.onOpen(); }
     }
 
     private onClose() {
-        if (this.props.onClose) {
-            this.props.onClose();
-        }
+        if (this.props.onClose) { this.props.onClose(); }
     }
 
     private openWindow() {
@@ -76,7 +69,7 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
 
     private updateContent() {
         const content = this.renderChildren();
-        this.infoWindow.setContent(content);
+        this.infoWindow.setContent(content as Node);
     }
 
     private closeWindow() {
@@ -85,7 +78,9 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
 
     private renderChildren() {
         const {children} = this.props;
-        return children.toString();
+        const div = document.createElement("div");
+        ReactDOM.render(children as React.ReactElement<any>, div );
+        return div;
     }
 }
 

@@ -99,3 +99,6 @@ test/userlib/
 # Typescript generated .js files
 src/GoogleMaps/lib/autoBind.js
 src/GoogleMaps/widget/*.js
+src/GoogleMaps/widget/components/Info.js
+src/GoogleMaps/widget/components/InfoWindow.js
+*.map

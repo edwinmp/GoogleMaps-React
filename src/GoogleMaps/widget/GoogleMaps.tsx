@@ -14,6 +14,7 @@ import Wrapper, { MapAppearance, MapBehaviour } from "./components/Wrapper";
 export interface MapData {
     latitude: number;
     longitude: number;
+    info: string;
 }
 
 export default class GoogleMaps extends _WidgetBase {
@@ -37,6 +38,7 @@ export default class GoogleMaps extends _WidgetBase {
     private latAttr: string;
     private lngAttr: string;
     private xpathConstraint: string;
+    private infoWindowAttr: string;
 
     // Internal variables. Non-primitives created in the prototype are shared between all widget instances.
     private contextObj: mendix.lib.MxObject;
@@ -75,8 +77,6 @@ export default class GoogleMaps extends _WidgetBase {
         this.appearance = {
             defaultMapType: this.defaultMapType,
         };
-
-        // this._updateRendering();
     }
 
     /**
@@ -146,10 +146,11 @@ export default class GoogleMaps extends _WidgetBase {
     }
     private fetchDataFromMxObject(object: mendix.lib.MxObject) {
         logger.debug(this.id + "fetchDataFromMxObject");
-        let coordinates: MapData = {latitude: null, longitude: null};
+        let coordinates: MapData = {info: null, latitude: null, longitude: null};
         if (object) {
             coordinates.latitude = Number(object.get(this.latAttr));
             coordinates.longitude = Number(object.get(this.lngAttr));
+            coordinates.info = this.infoWindowAttr !== "" ? object.get(this.infoWindowAttr) as string : null;
             // TODO: consider coordinates retrieved over association: Not in this function though
         }
         return coordinates ? coordinates : null;
