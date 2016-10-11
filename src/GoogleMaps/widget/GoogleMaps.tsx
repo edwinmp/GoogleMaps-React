@@ -40,11 +40,16 @@ export default class GoogleMaps extends _WidgetBase {
     private appearance: MapAppearance;
     private data: Array<MapData>;
 
-    constructor(args?: Object, elem?: HTMLElement) {    
+    constructor(args?: Object, elem?: HTMLElement) {
         super() ;
-        return new dojoGoogleMaps(args, elem);
+        return new GoogleMapsWidget(args, elem);
     }
-
+    public postMixInProperties() {
+        logger.debug(this.id + ".postMixInProperties");
+        this.data = [];
+        this.setDataAndUpdate = this.setDataAndUpdate.bind(this);
+        this.updateRendering = this.updateRendering.bind(this);
+    }
     public postCreate() {
         logger.debug(this.id + ".postCreate");
         domStyle.set(this.domNode, {
@@ -67,7 +72,7 @@ export default class GoogleMaps extends _WidgetBase {
     public update(mxObject: mendix.lib.MxObject, callback?: Function) {
         logger.debug(this.id + ".update");
         this.contextObj = mxObject;
-        this.setMapData(callback);
+        this.fetchMapData(callback);
         this.resetSubscriptions();
     }
 
@@ -93,45 +98,47 @@ export default class GoogleMaps extends _WidgetBase {
         mxLang.nullExec(callback);
     }
     private resetSubscriptions () {
-        logger.debug(this.id + "._resetSubscriptions");
+        logger.debug(this.id + ".resetSubscriptions");
         if (this.contextObj) {
             this.subscribe({
-                callback: dojoLang.hitch(this, (guid) => {
-                    this.setMapData();
-                }),
+                callback: (guid: string) => this.fetchMapData(),
                 guid: this.contextObj.getGuid(),
             });
         } else {
             this.subscribe({
-                callback: dojoLang.hitch(this, (entity) => {
-                    this.setMapData();
-                }),
+                callback: (entity: string) => this.fetchMapData(),
                 entity: this.mapEntity,
                 guid: null,
             });
         }
     }
-    private setMapData(callback?: Function) {
-        logger.debug(this.id + ".setMapData");
+    private fetchMapData(callback?: Function) {
+        logger.debug(this.id + ".fetchMapData");
         if (this.useContextObject) {
-            this.data.push(this.fetchDataFromMxObject(this.contextObj));
-            this.updateRendering(callback);
+            this.setDataAndUpdate([this.contextObj]);
         } else {
-            this.fetchDataFromDatabase(callback);
+            this.fetchDataFromDatabase();
         }
+        mxLang.nullExec(callback);
+    }
+    private setDataAndUpdate(mxObjects: Array<mendix.lib.MxObject>) {
+        logger.debug(this.id + ".setDataAndUpdate");
+        this.data = (mxObjects.map((mxObject) => {
+            return this.fetchDataFromMxObject(mxObject);
+        }));
+        this.updateRendering();
     }
     private fetchDataFromMxObject(object: mendix.lib.MxObject) {
-        logger.debug(this.id + "fetchDataFromMxObject");
+        logger.debug(this.id + ".fetchDataFromMxObject");
         let coordinates: MapData = {info: null, latitude: null, longitude: null};
         if (object) {
             coordinates.latitude = Number(object.get(this.latAttr));
             coordinates.longitude = Number(object.get(this.lngAttr));
             coordinates.info = this.infoWindowAttr !== "" ? object.get(this.infoWindowAttr) as string : null;
-            // TODO: consider coordinates retrieved over association: Not in this function though
         }
         return coordinates ? coordinates : null;
     }
-    private fetchDataFromDatabase(callback?: Function) {
+    private fetchDataFromDatabase() {
         logger.debug(this.id + "fetchDataFromDatabase");
         let xpath = "//" + this.mapEntity + this.xpathConstraint;
         if (!this.contextObj && xpath.indexOf("[%CurrentObject%]") > -1) {
@@ -142,12 +149,7 @@ export default class GoogleMaps extends _WidgetBase {
             xpath = xpath.replace("[%CurrentObject%]", this.contextObj.getGuid());
         }
         mx.data.get({
-            callback: dojoLang.hitch(this, (objects) => {
-                this.data = objects.map((mxObject: mendix.lib.MxObject) => {
-                    return this.fetchDataFromMxObject(mxObject);
-                });
-                this.updateRendering(callback);
-            }),
+            callback: (objects: Array<mendix.lib.MxObject>) => this.setDataAndUpdate(objects),
             error: (error) => { logger.debug("Error retrieving data"); }, // TODO: Add alert
             xpath,
         });
@@ -155,11 +157,10 @@ export default class GoogleMaps extends _WidgetBase {
 }
 
 /* tslint:disable:only-arrow-functions */
-let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], (function(Source: any) {
+let GoogleMapsWidget = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], (function(Source: any) {
     let result: any = {};
     result.constructor = function() {
         logger.debug( this.id + ".constructor");
-        this.data = [];
     };
     for (let i in Source.prototype) {
         if (i !== "constructor" && Source.prototype.hasOwnProperty(i)) {
