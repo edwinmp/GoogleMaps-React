@@ -101,5 +101,9 @@ src/GoogleMaps/lib/autoBind.js
 src/GoogleMaps/widget/*.js
 src/GoogleMaps/widget/components/Info.js
 src/GoogleMaps/widget/components/InfoWindow.js
+src/GoogleMaps/widget/components/Map.js
+src/GoogleMaps/widget/components/Marker.js
+src/GoogleMaps/widget/components/Info.js
+src/GoogleMaps/widget/components/Wrapper.js
 src/GoogleMaps/widget/GoogleMaps.js
 *.map
