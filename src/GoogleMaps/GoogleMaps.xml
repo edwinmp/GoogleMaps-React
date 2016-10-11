@@ -123,10 +123,10 @@
             <category>Data source</category>
             <description>The XPath constraint on the objects.</description>
         </property>
-        <property key="markerDisplayAttr" type="attribute" required="false" entityProperty="mapEntity" isPath="optional" pathType="reference">
-            <caption>Marker attribute</caption>
+        <property key="infoWindowAttr" type="attribute" required="false" entityProperty="mapEntity">
+            <caption>Info window attribute</caption>
             <category>Data source</category>
-            <description>The attribute that will be displayed in the marker info bubble. (Not required)</description>
+            <description>Will contain the text to be displayed when a marker is clicked</description>
             <attributeTypes>
                 <attributeType name="String"/>
             </attributeTypes>

@@ -4,6 +4,9 @@ import * as dojoDeferred from "dojo/Deferred";
 
 import { toCamelCase } from "../utils/utils";
 
+import Info from "./Info";
+import InfoWindow from "./InfoWindow";
+
 const evtNames = ["click", "mouseover", "recenter"];
 
 interface MarkerProps extends React.Props<Marker> {
