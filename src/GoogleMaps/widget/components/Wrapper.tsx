@@ -30,8 +30,9 @@ export interface MapBehaviour {
     zoom?: number;
 }
 export interface MapAppearance {
-    defaultMapType?: string;
+    defaultMapType?: MapTypeIds;
 }
+export type MapTypeIds = "ROADMAP" | "HYBRID" | "SATELLITE" | "TERRAIN";
 
 export default class Wrapper extends React.Component<WrapperProps, WrapperState> {
     public static defaultProps: WrapperProps = {
@@ -99,7 +100,7 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
                 centerAroundCurrentLocation: false,
                 google,
                 initialCenter: this.getInitialCenter(),
-                mapTypeId: google.maps.MapTypeId[appearance.defaultMapType as any],
+                mapTypeId: this.getMapTypeId(appearance.defaultMapType),
                 widgetID: props.widgetID,
                 zoom: behaviour.zoom,
             };
@@ -115,6 +116,20 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
                     Loading ... // TODO: Make translatable
                 </div>
             );
+        }
+    }
+    private getMapTypeId(mapTypeId: MapTypeIds) {
+        if (mapTypeId === "ROADMAP") {
+            return google.maps.MapTypeId.ROADMAP;
+        }
+        if (mapTypeId === "HYBRID") {
+            return google.maps.MapTypeId.HYBRID;
+        }
+        if (mapTypeId === "SATELLITE") {
+            return google.maps.MapTypeId.SATELLITE;
+        }
+        if (mapTypeId === "TERRAIN") {
+            return google.maps.MapTypeId.TERRAIN;
         }
     }
     private loadGoogleScript(src: string, onLoad: Function, onError: Function) {

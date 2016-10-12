@@ -9,7 +9,7 @@ import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 // import components
-import Wrapper, { MapAppearance, MapBehaviour } from "./components/Wrapper";
+import Wrapper, { MapAppearance, MapBehaviour, MapTypeIds } from "./components/Wrapper";
 
 export interface MapData {
     latitude: number;
@@ -21,7 +21,7 @@ export default class GoogleMaps extends _WidgetBase {
     // Appearance
     private mapHeight: number;
     private mapWidth: number;
-    private defaultMapType: string;
+    private defaultMapType: MapTypeIds;
     // Behaviour
     private apiAccessKey: string;
     private defaultLat: string;
@@ -49,7 +49,7 @@ export default class GoogleMaps extends _WidgetBase {
         this.data = [];
         this.setDataAndUpdate = this.setDataAndUpdate.bind(this);
         this.updateRendering = this.updateRendering.bind(this);
-        domClass.add(this.domNode, "google-maps");
+        domClass.add(this.domNode, "google-map-wrapper");
         domStyle.set(this.domNode, {
             height: this.mapHeight !== 0 ? this.mapHeight + "px" : "auto",
             width: this.mapWidth !== 0 ? this.mapWidth + "px" : "100%",
