@@ -1,0 +1,17 @@
+.google-map-wrapper {
+    position: relative;
+}
+
+.google-map-container {
+    height: 100%;
+    position: absolute;
+    width: 100%;
+}
+
+.google-map {
+    bottom: 0;
+    left: 0;
+    position: absolute;
+    right: 0;
+    top: 0;
+}

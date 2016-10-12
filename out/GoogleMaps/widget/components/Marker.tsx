@@ -7,7 +7,7 @@ import { toCamelCase } from "../utils/utils";
 import Info from "./Info";
 import InfoWindow from "./InfoWindow";
 
-const eventNames = ["click", "mouseover", "recenter"];
+const evtNames = ["click", "mouseover", "recenter"];
 
 interface MarkerProps extends React.Props<Marker> {
     map?: google.maps.Map;
@@ -53,7 +53,7 @@ export default class Marker extends React.Component<MarkerProps, any> {
         }
 
         position = position || mapCenter;
-        const isLatLng = position instanceof google.maps.LatLng;
+        let isLatLng = position instanceof google.maps.LatLng;
         if (!isLatLng) {
             position = new google.maps.LatLng(position.lat(), position.lng());
         }
@@ -64,8 +64,8 @@ export default class Marker extends React.Component<MarkerProps, any> {
         };
         this.marker = new google.maps.Marker(markerConfig);
 
-        eventNames.forEach(eventName => {
-            this.marker.addListener(eventName, this.handleEvent(eventName));
+        evtNames.forEach(e => {
+            this.marker.addListener(e, this.handleEvent(e));
         });
 
         this.markerPromise.resolve(this.marker);
@@ -73,7 +73,7 @@ export default class Marker extends React.Component<MarkerProps, any> {
 
     private handleEvent(eventName: string) {
         return (e: Event) => {
-            eventName = "on" + toCamelCase(eventName);
+            eventName = `on${toCamelCase(eventName)}`;
             if (this.props[eventName]) {
                 this.props[eventName](this.props, this.marker, e);
             }

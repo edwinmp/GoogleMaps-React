@@ -1,3 +1,4 @@
+declare var window: WindowExtension;
 // import dependencies
 import * as React from "GoogleMaps/lib/react";
 
@@ -6,6 +7,9 @@ import {MapData} from "../GoogleMaps";
 import Map, {MapProps} from "./Map";
 import Marker from "./Marker";
 
+interface WindowExtension extends Window {
+    loadedScript: Array<string>;
+}
 interface WrapperProps extends React.Props<Wrapper> {
     appearance: MapAppearance;
     apiKey: string;
@@ -30,9 +34,8 @@ export interface MapBehaviour {
     zoom?: number;
 }
 export interface MapAppearance {
-    defaultMapType?: MapTypeIds;
+    defaultMapType?: string;
 }
-export type MapTypeIds = "ROADMAP" | "HYBRID" | "SATELLITE" | "TERRAIN";
 
 export default class Wrapper extends React.Component<WrapperProps, WrapperState> {
     public static defaultProps: WrapperProps = {
@@ -56,19 +59,24 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         // instantiate class variables
         this.libraries = ["geometry", "places", "visualization", "places"];
         this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
+        if (!window.loadedScript) {
+            window.loadedScript = [];
+        }
         // bind context
         this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
         this.onScriptLoaded = this.onScriptLoaded.bind(this);
         this.onScriptLoadingError = this.onScriptLoadingError.bind(this);
         this.alertDiv = this.alertDiv.bind(this);
 
+        // load google api script
+        const src = this.getGoogleMapsApiUrl();
         if (typeof google === "undefined") {
             this.google = null;
             this.state = {
                 alert: { hasAlert: false },
                 isScriptLoaded: false,
             };
-            this.loadGoogleScript(this.getGoogleMapsApiUrl(), this.onScriptLoaded, this.onScriptLoadingError);
+            this.loadGoogleScript(src, this.onScriptLoaded, this.onScriptLoadingError);
         } else {
             this.state = {
                 alert: { hasAlert: false },
@@ -76,6 +84,10 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
             };
         }
     }
+    /**
+     * Life cycle: Called to render the component
+     * 
+     */
     public render() {
         logger.debug(this.loggerNode + ".render");
         const props = this.props;
@@ -90,6 +102,10 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
             </div>
         );
     }
+    /**
+     * Returns component that loads the google api and subsequently the Map component
+     * 
+     */
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
         if (this.state.isScriptLoaded) {
@@ -100,7 +116,7 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
                 centerAroundCurrentLocation: false,
                 google,
                 initialCenter: this.getInitialCenter(),
-                mapTypeId: this.getMapTypeId(appearance.defaultMapType),
+                mapTypeId: google.maps.MapTypeId[appearance.defaultMapType as any],
                 widgetID: props.widgetID,
                 zoom: behaviour.zoom,
             };
@@ -113,25 +129,16 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         } else {
             return (
                 <div>
-                    Loading ... // TODO: Make translatable
+                    Loading ...
                 </div>
             );
         }
     }
-    private getMapTypeId(mapTypeId: MapTypeIds) {
-        if (mapTypeId === "ROADMAP") {
-            return google.maps.MapTypeId.ROADMAP;
-        }
-        if (mapTypeId === "HYBRID") {
-            return google.maps.MapTypeId.HYBRID;
-        }
-        if (mapTypeId === "SATELLITE") {
-            return google.maps.MapTypeId.SATELLITE;
-        }
-        if (mapTypeId === "TERRAIN") {
-            return google.maps.MapTypeId.TERRAIN;
-        }
-    }
+    /**
+     * Load google api script that's required to use the google maps
+     * Execute the success and error callbacks to handle the respective events
+     * 
+     */
     private loadGoogleScript(src: string, onLoad: Function, onError: Function) {
         const script = document.createElement("script");
         script.src = src;
@@ -156,6 +163,10 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         }
         return null;
     }
+    /**
+     * Returns google maps api script
+     * 
+     */
     private getGoogleMapsApiUrl() {
         return this.googleMapsApiBaseUrl +
                "?key=" +
@@ -163,17 +174,29 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
                "&libraries=" +
                this.libraries.join();
     }
+    /**
+     * Called when google Maps API script is successfully loaded
+     * 
+     */
     private onScriptLoaded() {
         logger.debug(this.loggerNode + ".onScriptLoaded");
         if (!this.state.isScriptLoaded && google) {
             this.google = google;
-            const hasAlert = this.state.alert.hasAlert;
-            this.setState({
-                alert: { hasAlert: hasAlert ? false : hasAlert },
-                isScriptLoaded: true,
-            });
+            this.addCache(this.getGoogleMapsApiUrl());
+            if (this.state.alert.hasAlert) {
+                this.setState({
+                    alert: { hasAlert: false },
+                    isScriptLoaded: true,
+                });
+            } else {
+                this.setState({ isScriptLoaded: true });
+            }
         }
     }
+    /**
+     * Called when google maps API script fails to load
+     * 
+     */
     private onScriptLoadingError() {
         logger.debug(this.loggerNode + ".onScriptLoadingError");
         this.setState({
@@ -183,6 +206,15 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
             },
             isScriptLoaded: false,
         });
+    }
+    /**
+     * Keep track of loaded scripts so as not to load them more than once
+     * 
+     */
+    private addCache(entry: string) {
+        if (window.loadedScript && window.loadedScript.indexOf(entry) < 0) {
+            window.loadedScript.push(entry);
+        }
     }
     private getMarkers(data: Array<MapData>) {
         if (data.length > 0) {
