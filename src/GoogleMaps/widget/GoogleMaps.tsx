@@ -1,6 +1,6 @@
 // import dependent modules
 import * as dojoDeclare from "dojo/_base/declare";
-import * as dojoLang from "dojo/_base/lang";
+import * as domClass from "dojo/dom-class";
 import * as domStyle from "dojo/dom-style";
 import * as mxLang from "mendix/lang";
 import * as _WidgetBase from  "mxui/widget/_WidgetBase";
@@ -44,17 +44,14 @@ export default class GoogleMaps extends _WidgetBase {
         super() ;
         return new GoogleMapsWidget(args, elem);
     }
-    public postMixInProperties() {
-        logger.debug(this.id + ".postMixInProperties");
+    public postCreate() {
+        logger.debug(this.id + ".postCreate");
         this.data = [];
         this.setDataAndUpdate = this.setDataAndUpdate.bind(this);
         this.updateRendering = this.updateRendering.bind(this);
-    }
-    public postCreate() {
-        logger.debug(this.id + ".postCreate");
+        domClass.add(this.domNode, "google-maps");
         domStyle.set(this.domNode, {
             height: this.mapHeight !== 0 ? this.mapHeight + "px" : "auto",
-            position: "relative", // required to contain map width
             width: this.mapWidth !== 0 ? this.mapWidth + "px" : "100%",
         });
         // initialize widget component props
@@ -124,11 +121,11 @@ export default class GoogleMaps extends _WidgetBase {
     private setDataAndUpdate(mxObjects: Array<mendix.lib.MxObject>) {
         logger.debug(this.id + ".setDataAndUpdate");
         this.data = (mxObjects.map((mxObject) => {
-            return this.fetchDataFromMxObject(mxObject);
+            return this.getDataFromMxObject(mxObject);
         }));
         this.updateRendering();
     }
-    private fetchDataFromMxObject(object: mendix.lib.MxObject) {
+    private getDataFromMxObject(object: mendix.lib.MxObject) {
         logger.debug(this.id + ".fetchDataFromMxObject");
         let coordinates: MapData = {info: null, latitude: null, longitude: null};
         if (object) {
