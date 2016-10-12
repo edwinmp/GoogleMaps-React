@@ -61,15 +61,13 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         this.onScriptLoadingError = this.onScriptLoadingError.bind(this);
         this.alertDiv = this.alertDiv.bind(this);
 
-        // load google api script
-        const src = this.getGoogleMapsApiUrl();
         if (typeof google === "undefined") {
             this.google = null;
             this.state = {
                 alert: { hasAlert: false },
                 isScriptLoaded: false,
             };
-            this.loadGoogleScript(src, this.onScriptLoaded, this.onScriptLoadingError);
+            this.loadGoogleScript(this.getGoogleMapsApiUrl(), this.onScriptLoaded, this.onScriptLoadingError);
         } else {
             this.state = {
                 alert: { hasAlert: false },
@@ -77,10 +75,6 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
             };
         }
     }
-    /**
-     * Life cycle: Called to render the component
-     * 
-     */
     public render() {
         logger.debug(this.loggerNode + ".render");
         const props = this.props;
@@ -95,10 +89,6 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
             </div>
         );
     }
-    /**
-     * Returns component that loads the google api and subsequently the Map component
-     * 
-     */
     private getContent() {
         logger.debug(this.loggerNode + ".getContent");
         if (this.state.isScriptLoaded) {
@@ -122,16 +112,11 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         } else {
             return (
                 <div>
-                    Loading ...
+                    Loading ... // TODO: Make translatable
                 </div>
             );
         }
     }
-    /**
-     * Load google api script that's required to use the google maps
-     * Execute the success and error callbacks to handle the respective events
-     * 
-     */
     private loadGoogleScript(src: string, onLoad: Function, onError: Function) {
         const script = document.createElement("script");
         script.src = src;
@@ -156,10 +141,6 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         }
         return null;
     }
-    /**
-     * Returns google maps api script
-     * 
-     */
     private getGoogleMapsApiUrl() {
         return this.googleMapsApiBaseUrl +
                "?key=" +
@@ -167,28 +148,17 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
                "&libraries=" +
                this.libraries.join();
     }
-    /**
-     * Called when google Maps API script is successfully loaded
-     * 
-     */
     private onScriptLoaded() {
         logger.debug(this.loggerNode + ".onScriptLoaded");
         if (!this.state.isScriptLoaded && google) {
             this.google = google;
-            if (this.state.alert.hasAlert) {
-                this.setState({
-                    alert: { hasAlert: false },
-                    isScriptLoaded: true,
-                });
-            } else {
-                this.setState({ isScriptLoaded: true });
-            }
+            const hasAlert = this.state.alert.hasAlert;
+            this.setState({
+                alert: { hasAlert: hasAlert ? false : hasAlert },
+                isScriptLoaded: true,
+            });
         }
     }
-    /**
-     * Called when google maps API script fails to load
-     * 
-     */
     private onScriptLoadingError() {
         logger.debug(this.loggerNode + ".onScriptLoadingError");
         this.setState({

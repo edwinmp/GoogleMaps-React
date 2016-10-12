@@ -25,14 +25,13 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
             this.onScriptLoaded = this.onScriptLoaded.bind(this);
             this.onScriptLoadingError = this.onScriptLoadingError.bind(this);
             this.alertDiv = this.alertDiv.bind(this);
-            var src = this.getGoogleMapsApiUrl();
             if (typeof google === "undefined") {
                 this.google = null;
                 this.state = {
                     alert: { hasAlert: false },
                     isScriptLoaded: false,
                 };
-                this.loadGoogleScript(src, this.onScriptLoaded, this.onScriptLoadingError);
+                this.loadGoogleScript(this.getGoogleMapsApiUrl(), this.onScriptLoaded, this.onScriptLoadingError);
             }
             else {
                 this.state = {
@@ -71,7 +70,7 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
                     this.getMarkers(props.data)));
             }
             else {
-                return (React.createElement("div", null, "Loading ..."));
+                return (React.createElement("div", null, "Loading ... // TODO: Make translatable"));
             }
         };
         Wrapper.prototype.loadGoogleScript = function (src, onLoad, onError) {
@@ -101,15 +100,11 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
             logger.debug(this.loggerNode + ".onScriptLoaded");
             if (!this.state.isScriptLoaded && google) {
                 this.google = google;
-                if (this.state.alert.hasAlert) {
-                    this.setState({
-                        alert: { hasAlert: false },
-                        isScriptLoaded: true,
-                    });
-                }
-                else {
-                    this.setState({ isScriptLoaded: true });
-                }
+                var hasAlert = this.state.alert.hasAlert;
+                this.setState({
+                    alert: { hasAlert: hasAlert ? false : hasAlert },
+                    isScriptLoaded: true,
+                });
             }
         };
         Wrapper.prototype.onScriptLoadingError = function () {
