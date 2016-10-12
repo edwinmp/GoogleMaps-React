@@ -69,7 +69,7 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
 
     private updateContent() {
         const content = this.renderChildren();
-        this.infoWindow.setContent(content);
+        this.infoWindow.setContent(content as Node);
     }
 
     private closeWindow() {
@@ -77,8 +77,9 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
     }
 
     private renderChildren() {
+        const {children} = this.props;
         const div = document.createElement("div");
-        ReactDOM.render(this.props.children as React.ReactElement<any>, div );
+        ReactDOM.render(children as React.ReactElement<any>, div );
         return div;
     }
 }

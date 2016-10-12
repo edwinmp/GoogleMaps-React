@@ -32,18 +32,18 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
             logger.debug(this.id + ".update");
             this.contextObj = mxObject;
             this.setMapData(callback);
-            this._resetSubscriptions();
+            this.resetSubscriptions();
         };
         GoogleMaps.prototype.uninitialize = function () {
             logger.debug(this.id + ".uninitialize");
             ReactDOM.unmountComponentAtNode(this.domNode);
         };
-        GoogleMaps.prototype._updateRendering = function (callback) {
+        GoogleMaps.prototype.updateRendering = function (callback) {
             logger.debug(this.id + ".updateRendering");
             ReactDOM.render(React.createElement(Wrapper_1.default, {apiKey: this.apiAccessKey, appearance: this.appearance, behaviour: this.behaviour, data: this.data, height: this.mapHeight, widgetID: this.id, width: this.mapWidth}), this.domNode);
             mxLang.nullExec(callback);
         };
-        GoogleMaps.prototype._resetSubscriptions = function () {
+        GoogleMaps.prototype.resetSubscriptions = function () {
             var _this = this;
             logger.debug(this.id + "._resetSubscriptions");
             if (this.contextObj) {
@@ -68,7 +68,7 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
             logger.debug(this.id + ".setMapData");
             if (this.useContextObject) {
                 this.data.push(this.fetchDataFromMxObject(this.contextObj));
-                this._updateRendering(callback);
+                this.updateRendering(callback);
             }
             else {
                 this.fetchDataFromDatabase(callback);
@@ -76,10 +76,11 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
         };
         GoogleMaps.prototype.fetchDataFromMxObject = function (object) {
             logger.debug(this.id + "fetchDataFromMxObject");
-            var coordinates = { latitude: null, longitude: null };
+            var coordinates = { info: null, latitude: null, longitude: null };
             if (object) {
                 coordinates.latitude = Number(object.get(this.latAttr));
                 coordinates.longitude = Number(object.get(this.lngAttr));
+                coordinates.info = this.infoWindowAttr !== "" ? object.get(this.infoWindowAttr) : null;
             }
             return coordinates ? coordinates : null;
         };
@@ -98,7 +99,7 @@ define(["require", "exports", "dojo/_base/declare", "dojo/_base/lang", "dojo/dom
                     _this.data = objects.map(function (mxObject) {
                         return _this.fetchDataFromMxObject(mxObject);
                     });
-                    _this._updateRendering(callback);
+                    _this.updateRendering(callback);
                 }),
                 error: function (error) { logger.debug("Error retrieving data"); },
                 xpath: xpath,

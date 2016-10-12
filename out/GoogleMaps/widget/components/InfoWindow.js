@@ -3,7 +3,7 @@ var __extends = (this && this.__extends) || function (d, b) {
     function __() { this.constructor = d; }
     d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
 };
-define(["require", "exports", "GoogleMaps/lib/react"], function (require, exports, React) {
+define(["require", "exports", "GoogleMaps/lib/react", "GoogleMaps/lib/react-dom"], function (require, exports, React, ReactDOM) {
     "use strict";
     var InfoWindow = (function (_super) {
         __extends(InfoWindow, _super);
@@ -14,21 +14,19 @@ define(["require", "exports", "GoogleMaps/lib/react"], function (require, export
             this.renderInfoWindow();
         };
         InfoWindow.prototype.componentDidUpdate = function (prevProps) {
-            var map = this.props.map;
+            var props = this.props;
+            var map = props.map;
             if (!google || !map) {
                 return;
             }
             if (map !== prevProps.map) {
                 this.renderInfoWindow();
             }
-            if (this.props.children !== prevProps.children) {
+            if (props.children !== prevProps.children) {
                 this.updateContent();
             }
-            if ((this.props.visible !== prevProps.visible ||
-                this.props.marker !== prevProps.marker)) {
-                this.props.visible ?
-                    this.openWindow() :
-                    this.closeWindow();
+            if ((props.visible !== prevProps.visible || props.marker !== prevProps.marker)) {
+                props.visible ? this.openWindow() : this.closeWindow();
             }
         };
         InfoWindow.prototype.render = function () {
@@ -38,11 +36,9 @@ define(["require", "exports", "GoogleMaps/lib/react"], function (require, export
             if (!google || !google.maps) {
                 return;
             }
-            var iw = this.infoWindow = new google.maps.InfoWindow({
-                content: "",
-            });
-            google.maps.event.addListener(iw, "closeclick", this.onClose.bind(this));
-            google.maps.event.addListener(iw, "domready", this.onOpen.bind(this));
+            var infoWindow = this.infoWindow = new google.maps.InfoWindow({ content: "" });
+            google.maps.event.addListener(infoWindow, "closeclick", this.onClose.bind(this));
+            google.maps.event.addListener(infoWindow, "domready", this.onOpen.bind(this));
         };
         InfoWindow.prototype.onOpen = function () {
             if (this.props.onOpen) {
@@ -66,7 +62,9 @@ define(["require", "exports", "GoogleMaps/lib/react"], function (require, export
         };
         InfoWindow.prototype.renderChildren = function () {
             var children = this.props.children;
-            return children.toString();
+            var div = document.createElement("div");
+            ReactDOM.render(children, div);
+            return div;
         };
         InfoWindow.defaultProps = {
             visible: false,
