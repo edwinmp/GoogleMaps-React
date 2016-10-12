@@ -21,9 +21,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
             logger.debug(this.loggerNode + ".constructor");
             this.libraries = ["geometry", "places", "visualization", "places"];
             this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
-            if (!window.loadedScript) {
-                window.loadedScript = [];
-            }
             this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
             this.onScriptLoaded = this.onScriptLoaded.bind(this);
             this.onScriptLoadingError = this.onScriptLoadingError.bind(this);
@@ -104,7 +101,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
             logger.debug(this.loggerNode + ".onScriptLoaded");
             if (!this.state.isScriptLoaded && google) {
                 this.google = google;
-                this.addCache(this.getGoogleMapsApiUrl());
                 if (this.state.alert.hasAlert) {
                     this.setState({
                         alert: { hasAlert: false },
@@ -125,11 +121,6 @@ define(["require", "exports", "GoogleMaps/lib/react", "./Map", "./Marker"], func
                 },
                 isScriptLoaded: false,
             });
-        };
-        Wrapper.prototype.addCache = function (entry) {
-            if (window.loadedScript && window.loadedScript.indexOf(entry) < 0) {
-                window.loadedScript.push(entry);
-            }
         };
         Wrapper.prototype.getMarkers = function (data) {
             if (data.length > 0) {

@@ -1,4 +1,3 @@
-declare var window: WindowExtension;
 // import dependencies
 import * as React from "GoogleMaps/lib/react";
 
@@ -7,9 +6,6 @@ import {MapData} from "../GoogleMaps";
 import Map, {MapProps} from "./Map";
 import Marker from "./Marker";
 
-interface WindowExtension extends Window {
-    loadedScript: Array<string>;
-}
 interface WrapperProps extends React.Props<Wrapper> {
     appearance: MapAppearance;
     apiKey: string;
@@ -59,9 +55,6 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         // instantiate class variables
         this.libraries = ["geometry", "places", "visualization", "places"];
         this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
-        if (!window.loadedScript) {
-            window.loadedScript = [];
-        }
         // bind context
         this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
         this.onScriptLoaded = this.onScriptLoaded.bind(this);
@@ -182,7 +175,6 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         logger.debug(this.loggerNode + ".onScriptLoaded");
         if (!this.state.isScriptLoaded && google) {
             this.google = google;
-            this.addCache(this.getGoogleMapsApiUrl());
             if (this.state.alert.hasAlert) {
                 this.setState({
                     alert: { hasAlert: false },
@@ -206,15 +198,6 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
             },
             isScriptLoaded: false,
         });
-    }
-    /**
-     * Keep track of loaded scripts so as not to load them more than once
-     * 
-     */
-    private addCache(entry: string) {
-        if (window.loadedScript && window.loadedScript.indexOf(entry) < 0) {
-            window.loadedScript.push(entry);
-        }
     }
     private getMarkers(data: Array<MapData>) {
         if (data.length > 0) {
