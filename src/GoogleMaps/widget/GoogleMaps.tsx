@@ -15,6 +15,7 @@ export interface MapData {
     latitude: number;
     longitude: number;
     info: string;
+    guid: string;
 }
 
 export default class GoogleMaps extends _WidgetBase {
@@ -34,6 +35,7 @@ export default class GoogleMaps extends _WidgetBase {
     private lngAttr: string;
     private xpathConstraint: string;
     private infoWindowAttr: string;
+    private onClickMarkerMicroflow: string;
 
     private contextObj: mendix.lib.MxObject;
     private behaviour: MapBehaviour;
@@ -49,6 +51,7 @@ export default class GoogleMaps extends _WidgetBase {
         this.data = [];
         this.setDataAndUpdate = this.setDataAndUpdate.bind(this);
         this.updateRendering = this.updateRendering.bind(this);
+        this.callMicroflow = this.callMicroflow.bind(this);
         domClass.add(this.domNode, "google-map-wrapper");
         domStyle.set(this.domNode, {
             height: this.mapHeight !== 0 ? this.mapHeight + "px" : "auto",
@@ -80,6 +83,9 @@ export default class GoogleMaps extends _WidgetBase {
 
     private updateRendering (callback?: Function) {
         logger.debug(this.id + ".updateRendering");
+        const onClickMarker = this.onClickMarkerMicroflow
+            ? (guids: Array<string>) => this.callMicroflow(this.onClickMarkerMicroflow, guids)
+            : null;
         ReactDOM.render(
             <Wrapper
                 apiKey={this.apiAccessKey}
@@ -89,6 +95,7 @@ export default class GoogleMaps extends _WidgetBase {
                 height={this.mapHeight}
                 widgetID={this.id}
                 width={this.mapWidth}
+                onClickMarker={onClickMarker}
             />,
             this.domNode
         );
@@ -127,13 +134,14 @@ export default class GoogleMaps extends _WidgetBase {
     }
     private getDataFromMxObject(object: mendix.lib.MxObject) {
         logger.debug(this.id + ".fetchDataFromMxObject");
-        let coordinates: MapData = {info: null, latitude: null, longitude: null};
+        let location: MapData = {guid: null, info: null, latitude: null, longitude: null};
         if (object) {
-            coordinates.latitude = Number(object.get(this.latAttr));
-            coordinates.longitude = Number(object.get(this.lngAttr));
-            coordinates.info = this.infoWindowAttr !== "" ? object.get(this.infoWindowAttr) as string : null;
+            location.latitude = Number(object.get(this.latAttr));
+            location.longitude = Number(object.get(this.lngAttr));
+            location.info = this.infoWindowAttr !== "" ? object.get(this.infoWindowAttr) as string : null;
+            location.guid = object.getGuid();
         }
-        return coordinates ? coordinates : null;
+        return location ? location : null;
     }
     private fetchDataFromDatabase() {
         logger.debug(this.id + "fetchDataFromDatabase");
@@ -149,6 +157,24 @@ export default class GoogleMaps extends _WidgetBase {
             callback: (objects: Array<mendix.lib.MxObject>) => this.setDataAndUpdate(objects),
             error: () => { logger.debug("Error retrieving data"); }, // TODO: Add alert
             xpath,
+        });
+    }
+    private callMicroflow(microflow: string, guids?: Array<string>,
+                          onSuccessCallback?: Function, onFailureCallback?: Function) {
+        logger.debug(this.id + ".callMicroflow");
+        mx.data.action({
+            callback: (result: any) => {
+                if (onSuccessCallback) { onSuccessCallback(result); }
+            },
+            error: (error: mendix.lib.MxError) => {
+                if (onFailureCallback) { onFailureCallback(error); }
+            },
+            params: {
+                actionname: microflow,
+                applyto: "selection",
+                guids,
+            },
+            origin: this.mxform,
         });
     }
 }
