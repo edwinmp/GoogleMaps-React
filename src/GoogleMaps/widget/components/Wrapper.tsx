@@ -4,7 +4,7 @@ import * as React from "GoogleMaps/lib/react";
 // import components
 import {MapData} from "../GoogleMaps";
 import Map, {MapProps} from "./Map";
-import Marker from "./Marker";
+import Marker, {InfoWindowOptions} from "./Marker";
 
 interface WrapperProps extends React.Props<Wrapper> {
     appearance: MapAppearance;
@@ -106,14 +106,17 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
             };
             return (
                 <Map {...mapProps} >
-                    <Marker />
+                    <Marker
+                        widgetID={this.props.widgetID}
+                    />
                     {this.getMarkers(props.data)}
                 </Map>
             );
         } else {
+             // TODO: Make translatable
             return (
                 <div>
-                    Loading ... // TODO: Make translatable
+                    Loading ...
                 </div>
             );
         }
@@ -187,11 +190,17 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
     private getMarkers(data: Array<MapData>) {
         if (data.length > 0) {
             let key = 0;
-            return data.map((coordinates) => {
+            return data.map((location) => {
                 key++;
-                const position = new google.maps.LatLng(coordinates.latitude, coordinates.longitude);
+                const position = new google.maps.LatLng(location.latitude, location.longitude);
+                const infoWindow: InfoWindowOptions = {content: location.info};
                 return (
-                    <Marker position={position} key={key}/>
+                    <Marker
+                        position={position}
+                        key={key}
+                        infoWindow={infoWindow}
+                        widgetID={this.props.widgetID}
+                    />
                 );
             });
         }

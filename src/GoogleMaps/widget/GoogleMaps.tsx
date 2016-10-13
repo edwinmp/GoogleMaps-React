@@ -147,7 +147,7 @@ export default class GoogleMaps extends _WidgetBase {
         }
         mx.data.get({
             callback: (objects: Array<mendix.lib.MxObject>) => this.setDataAndUpdate(objects),
-            error: (error) => { logger.debug("Error retrieving data"); }, // TODO: Add alert
+            error: () => { logger.debug("Error retrieving data"); }, // TODO: Add alert
             xpath,
         });
     }
