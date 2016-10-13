@@ -31,10 +31,10 @@
     "node-mendix-modeler-path": "https://github.com/JelteMX/node-mendix-modeler-path/archive/v1.0.0.tar.gz"
   },
   "dependencies": {
-    "grunt-xsltproc": "^0.6.1",
     "@types/big.js": "0.0.31",
     "@types/dojo": "^1.9.34",
     "@types/react": "^0.14.37",
-    "@types/react-dom": "^0.14.17"
+    "@types/react-dom": "^0.14.17",
+    "grunt-xsltproc": "^0.6.1"
   }
 }

@@ -1,6 +1,6 @@
 // import dependent modules
 import * as dojoDeclare from "dojo/_base/declare";
-import * as domClass from "dojo/dom-class";
+import * as dojoLang from "dojo/_base/lang";
 import * as domStyle from "dojo/dom-style";
 import * as mxLang from "mendix/lang";
 import * as _WidgetBase from  "mxui/widget/_WidgetBase";
@@ -9,7 +9,7 @@ import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 // import components
-import Wrapper, { MapAppearance, MapBehaviour, MapTypeIds } from "./components/Wrapper";
+import Wrapper, { MapAppearance, MapBehaviour } from "./components/Wrapper";
 
 export interface MapData {
     latitude: number;
@@ -21,7 +21,7 @@ export default class GoogleMaps extends _WidgetBase {
     // Appearance
     private mapHeight: number;
     private mapWidth: number;
-    private defaultMapType: MapTypeIds;
+    private defaultMapType: string;
     // Behaviour
     private apiAccessKey: string;
     private defaultLat: string;
@@ -40,18 +40,16 @@ export default class GoogleMaps extends _WidgetBase {
     private appearance: MapAppearance;
     private data: Array<MapData>;
 
-    constructor(args?: Object, elem?: HTMLElement) {
+    constructor(args?: Object, elem?: HTMLElement) {    
         super() ;
-        return new GoogleMapsWidget(args, elem);
+        return new dojoGoogleMaps(args, elem);
     }
+
     public postCreate() {
         logger.debug(this.id + ".postCreate");
-        this.data = [];
-        this.setDataAndUpdate = this.setDataAndUpdate.bind(this);
-        this.updateRendering = this.updateRendering.bind(this);
-        domClass.add(this.domNode, "google-map-wrapper");
         domStyle.set(this.domNode, {
             height: this.mapHeight !== 0 ? this.mapHeight + "px" : "auto",
+            position: "relative", // required to contain map width
             width: this.mapWidth !== 0 ? this.mapWidth + "px" : "100%",
         });
         // initialize widget component props
@@ -69,7 +67,7 @@ export default class GoogleMaps extends _WidgetBase {
     public update(mxObject: mendix.lib.MxObject, callback?: Function) {
         logger.debug(this.id + ".update");
         this.contextObj = mxObject;
-        this.fetchMapData(callback);
+        this.setMapData(callback);
         this.resetSubscriptions();
     }
 
@@ -95,47 +93,45 @@ export default class GoogleMaps extends _WidgetBase {
         mxLang.nullExec(callback);
     }
     private resetSubscriptions () {
-        logger.debug(this.id + ".resetSubscriptions");
+        logger.debug(this.id + "._resetSubscriptions");
         if (this.contextObj) {
             this.subscribe({
-                callback: (guid: string) => this.fetchMapData(),
+                callback: dojoLang.hitch(this, (guid) => {
+                    this.setMapData();
+                }),
                 guid: this.contextObj.getGuid(),
             });
         } else {
             this.subscribe({
-                callback: (entity: string) => this.fetchMapData(),
+                callback: dojoLang.hitch(this, (entity) => {
+                    this.setMapData();
+                }),
                 entity: this.mapEntity,
                 guid: null,
             });
         }
     }
-    private fetchMapData(callback?: Function) {
-        logger.debug(this.id + ".fetchMapData");
+    private setMapData(callback?: Function) {
+        logger.debug(this.id + ".setMapData");
         if (this.useContextObject) {
-            this.setDataAndUpdate([this.contextObj]);
+            this.data.push(this.fetchDataFromMxObject(this.contextObj));
+            this.updateRendering(callback);
         } else {
-            this.fetchDataFromDatabase();
+            this.fetchDataFromDatabase(callback);
         }
-        mxLang.nullExec(callback);
     }
-    private setDataAndUpdate(mxObjects: Array<mendix.lib.MxObject>) {
-        logger.debug(this.id + ".setDataAndUpdate");
-        this.data = (mxObjects.map((mxObject) => {
-            return this.getDataFromMxObject(mxObject);
-        }));
-        this.updateRendering();
-    }
-    private getDataFromMxObject(object: mendix.lib.MxObject) {
-        logger.debug(this.id + ".fetchDataFromMxObject");
+    private fetchDataFromMxObject(object: mendix.lib.MxObject) {
+        logger.debug(this.id + "fetchDataFromMxObject");
         let coordinates: MapData = {info: null, latitude: null, longitude: null};
         if (object) {
             coordinates.latitude = Number(object.get(this.latAttr));
             coordinates.longitude = Number(object.get(this.lngAttr));
             coordinates.info = this.infoWindowAttr !== "" ? object.get(this.infoWindowAttr) as string : null;
+            // TODO: consider coordinates retrieved over association: Not in this function though
         }
         return coordinates ? coordinates : null;
     }
-    private fetchDataFromDatabase() {
+    private fetchDataFromDatabase(callback?: Function) {
         logger.debug(this.id + "fetchDataFromDatabase");
         let xpath = "//" + this.mapEntity + this.xpathConstraint;
         if (!this.contextObj && xpath.indexOf("[%CurrentObject%]") > -1) {
@@ -146,18 +142,24 @@ export default class GoogleMaps extends _WidgetBase {
             xpath = xpath.replace("[%CurrentObject%]", this.contextObj.getGuid());
         }
         mx.data.get({
-            callback: (objects: Array<mendix.lib.MxObject>) => this.setDataAndUpdate(objects),
-            error: () => { logger.debug("Error retrieving data"); }, // TODO: Add alert
+            callback: dojoLang.hitch(this, (objects) => {
+                this.data = objects.map((mxObject: mendix.lib.MxObject) => {
+                    return this.fetchDataFromMxObject(mxObject);
+                });
+                this.updateRendering(callback);
+            }),
+            error: (error) => { logger.debug("Error retrieving data"); }, // TODO: Add alert
             xpath,
         });
     }
 }
 
 /* tslint:disable:only-arrow-functions */
-let GoogleMapsWidget = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], (function(Source: any) {
+let dojoGoogleMaps = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], (function(Source: any) {
     let result: any = {};
     result.constructor = function() {
         logger.debug( this.id + ".constructor");
+        this.data = [];
     };
     for (let i in Source.prototype) {
         if (i !== "constructor" && Source.prototype.hasOwnProperty(i)) {
