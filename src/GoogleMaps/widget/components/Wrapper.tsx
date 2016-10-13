@@ -12,6 +12,7 @@ interface WrapperProps extends React.Props<Wrapper> {
     behaviour: MapBehaviour;
     data: Array<MapData>;
     height: number;
+    onClickMarker?: Function;
     widgetID: string;
     width: number;
 }
@@ -108,6 +109,7 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
                 <Map {...mapProps} >
                     <Marker
                         widgetID={this.props.widgetID}
+                        onClick={this.props.onClickMarker}
                     />
                     {this.getMarkers(props.data)}
                 </Map>
@@ -194,12 +196,16 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
                 key++;
                 const position = new google.maps.LatLng(location.latitude, location.longitude);
                 const infoWindow: InfoWindowOptions = {content: location.info};
+                const onClickMarker = this.props.onClickMarker
+                    ? () => this.props.onClickMarker([location.guid])
+                    : null;
                 return (
                     <Marker
                         position={position}
                         key={key}
                         infoWindow={infoWindow}
                         widgetID={this.props.widgetID}
+                        onClick={onClickMarker}
                     />
                 );
             });
