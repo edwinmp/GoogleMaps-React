@@ -2,9 +2,9 @@ import * as React from "GoogleMaps/lib/react";
 import ReactDOM = require("GoogleMaps/lib/react-dom");
 
 interface InfoWindowProps extends React.Props<InfoWindow> {
-    map?: google.maps.Map;
+    map: google.maps.Map;
     mapCenter?: google.maps.LatLng;
-    marker?: google.maps.Marker;
+    marker: google.maps.Marker;
     visible?: boolean;
     onClose?: Function;
     onOpen?: Function;
@@ -12,6 +12,8 @@ interface InfoWindowProps extends React.Props<InfoWindow> {
 
 export class InfoWindow extends React.Component<InfoWindowProps, any> {
     public static defaultProps: InfoWindowProps = {
+        map: null,
+        marker: null,
         visible: false,
     };
     private infoWindow: google.maps.InfoWindow;
@@ -64,7 +66,10 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
     }
 
     private openWindow() {
-        this.infoWindow.open(this.props.map, this.props.marker);
+        const {map, marker} = this.props;
+        if (map || marker) {
+            this.infoWindow.open(map, marker);
+        }
     }
 
     private updateContent() {

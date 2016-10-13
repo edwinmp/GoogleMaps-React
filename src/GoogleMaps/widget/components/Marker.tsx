@@ -15,16 +15,34 @@ interface MarkerProps extends React.Props<Marker> {
     google?: Object;
     mapCenter?: google.maps.LatLng;
     icon?: string;
+    infoWindow?: InfoWindowOptions;
+    widgetID: string;
     [key: string]: any;
 }
+interface MarkerState {
+    showInfoWindow: boolean;
+}
+export interface InfoWindowOptions {
+    content?: string;
+    classes?: string;
+}
 
-export default class Marker extends React.Component<MarkerProps, any> {
+export default class Marker extends React.Component<MarkerProps, MarkerState> {
     public static defaultProps: MarkerProps = {
         google: typeof google !== "undefined" ? google : null,
+        widgetID: "GoogleMaps",
     };
     private markerPromise: dojo.Deferred;
     private marker: google.maps.Marker;
-
+    private loggerNode: string;
+    public constructor(props: MarkerProps) {
+        super(props);
+        this.loggerNode = this.props.widgetID + ".Marker";
+        logger.debug(this.loggerNode + ".constructor");
+        this.state = {
+            showInfoWindow: true,
+        };
+    }
     public componentDidMount() {
         this.markerPromise = new dojoDeferred();
         this.renderMarker();
@@ -42,10 +60,25 @@ export default class Marker extends React.Component<MarkerProps, any> {
         }
     }
 
-    public render(): null {
+    public render() {
+        const infoWindowOptions = this.props.infoWindow;
+        if (infoWindowOptions) {
+            const classes: string = infoWindowOptions.classes ? infoWindowOptions.classes : null;
+            const content: string = infoWindowOptions.content ? infoWindowOptions.content : "";
+            return (
+                <InfoWindow
+                    visible={this.state.showInfoWindow}
+                    map={this.props.map}
+                    marker={this.marker}
+                >
+                    <Info classes={classes}>
+                        {content}
+                    </Info>
+                </InfoWindow>
+            );
+        }
         return null;
     }
-
     private renderMarker(): void {
         let {map, position, mapCenter} = this.props;
         if (!google) {
@@ -72,10 +105,11 @@ export default class Marker extends React.Component<MarkerProps, any> {
     }
 
     private handleEvent(eventName: string) {
-        return (e: Event) => {
+        return (event: Event) => {
             eventName = "on" + toCamelCase(eventName);
-            if (this.props[eventName]) {
-                this.props[eventName](this.props, this.marker, e);
+            const eventFunction = this.props[eventName] as Function;
+            if (eventFunction) {
+                eventFunction(this.props, this.marker, event);
             }
         };
     }
