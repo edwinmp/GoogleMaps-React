@@ -1,7 +1,7 @@
 {
   "name": "googlemaps",
-  "version": "6.0.0",
-  "description": "Google Maps",
+  "version": "0.1.0",
+  "description": "Bring the world into your Mendix application with Google maps.",
   "directories": {
     "test": "test"
   },
