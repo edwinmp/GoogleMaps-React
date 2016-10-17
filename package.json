@@ -1,6 +1,6 @@
 {
   "name": "googlemaps",
-  "version": "0.1.0",
+  "version": "6.0.0",
   "description": "Bring the world into your Mendix application with Google maps.",
   "directories": {
     "test": "test"
@@ -22,6 +22,7 @@
     "grunt-contrib-watch": "^1.0.0",
     "grunt-contrib-csslint": "^1.0.0",
     "grunt-newer": "^1.1.1",
+    "grunt-xsltproc": "^0.6.1",
     "load-grunt-tasks": "^3.1.0",
     "typescript": "^2.0.3",
     "node-base64-image": "^0.1.0",
@@ -36,7 +37,6 @@
     "@types/googlemaps": "^3.25.35",
     "@types/react": "^0.14.37",
     "@types/react-dom": "^0.14.17",
-    "grunt-xsltproc": "^0.6.1",
     "mendix-client": "git+https://github.com/FlockOfBirds/Mendix-client-typing.git"
   }
 }
