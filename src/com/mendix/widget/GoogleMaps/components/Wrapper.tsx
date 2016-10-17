@@ -6,15 +6,18 @@ import {MapData} from "../GoogleMaps";
 import Map, {MapProps} from "./Map";
 import Marker, {InfoWindowOptions} from "./Marker";
 
-interface WrapperProps extends React.Props<Wrapper> {
-    appearance: MapAppearance;
+export interface WrapperProps extends React.Props<Wrapper> {
     apiKey: string;
-    behaviour: MapBehaviour;
-    data: Array<MapData>;
-    height: number;
+    data?: Array<MapData>;
+    height?: number;
     onClickMarker?: Function;
-    widgetID: string;
-    width: number;
+    widgetID?: string;
+    width?: number;
+    apiAccessKey?: string;
+    defaultLat?: number;
+    defaultLng?: number;
+    zoom?: number;
+    defaultMapType?: MapTypeIds;
 }
 interface WrapperState {
     isScriptLoaded: boolean;
@@ -24,22 +27,11 @@ interface Alert {
     hasAlert: boolean;
     alertText?: string;
 }
-export interface MapBehaviour {
-    apiAccessKey?: string;
-    defaultLat?: number;
-    defaultLng?: number;
-    zoom?: number;
-}
-export interface MapAppearance {
-    defaultMapType?: MapTypeIds;
-}
 export type MapTypeIds = "ROADMAP" | "HYBRID" | "SATELLITE" | "TERRAIN";
 
-export default class Wrapper extends React.Component<WrapperProps, WrapperState> {
+export class Wrapper extends React.Component<WrapperProps, WrapperState> {
     public static defaultProps: WrapperProps = {
         apiKey: "",
-        appearance: {},
-        behaviour: {},
         data: [],
         height: 0,
         widgetID: "GoogleMaps",
@@ -95,15 +87,13 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         logger.debug(this.loggerNode + ".getContent");
         if (this.state.isScriptLoaded) {
             const props = this.props;
-            const behaviour = props.behaviour;
-            const appearance = props.appearance;
             const mapProps: MapProps = {
                 centerAroundCurrentLocation: false,
                 google,
                 initialCenter: this.getInitialCenter(),
-                mapTypeId: this.getMapTypeId(appearance.defaultMapType),
+                mapTypeId: this.getMapTypeId(props.defaultMapType),
                 widgetID: props.widgetID,
-                zoom: behaviour.zoom,
+                zoom: props.zoom,
             };
             return (
                 <Map {...mapProps} >
@@ -212,11 +202,11 @@ export default class Wrapper extends React.Component<WrapperProps, WrapperState>
         }
     }
     private getInitialCenter(): google.maps.LatLng {
-        const behaviour = this.props.behaviour;
-        const data = this.props.data;
-        if (data.length === 1 && behaviour.defaultLat === 0.0 && behaviour.defaultLng === 0.0) {
+        const props = this.props;
+        const data = props.data;
+        if (data.length === 1 && props.defaultLat === 0.0 && props.defaultLng === 0.0) {
             return new google.maps.LatLng(data[0].latitude, data[0].longitude);
         }
-        return new google.maps.LatLng(behaviour.defaultLat, behaviour.defaultLng);
+        return new google.maps.LatLng(props.defaultLat, props.defaultLng);
     }
 };

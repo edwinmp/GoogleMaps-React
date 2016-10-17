@@ -4,7 +4,7 @@ import * as domClass from "dojo/dom-class";
 import * as domStyle from "dojo/dom-style";
 import * as mendixLang from "mendix/lang";
 import * as _WidgetBase from  "mxui/widget/_WidgetBase";
-// tslint:disable-next-line
+
 import { createElement } from "com/mendix/widget/GoogleMaps/lib/react";
 import { render, unmountComponentAtNode } from "com/mendix/widget/GoogleMaps/lib/react-dom";
 
@@ -46,7 +46,7 @@ class GoogleMaps extends _WidgetBase {
         domClass.add(this.domNode, "google-map-wrapper");
         domStyle.set(this.domNode, {
             height: this.mapHeight !== 0 ? this.mapHeight + "px" : "auto",
-            width: this.mapWidth !== 0 ? this.mapWidth + "px" : "100%",
+            width: this.mapWidth !== 0 ? this.mapWidth + "px" : "100%"
         });
     }
 
@@ -75,7 +75,7 @@ class GoogleMaps extends _WidgetBase {
             onClickMarker,
             widgetID: this.id,
             width: this.mapWidth,
-            zoom: this.zoom,
+            zoom: this.zoom
         };
         render(createElement(Wrapper, this.wrapperProps), this.domNode);
         mendixLang.nullExec(callback);
@@ -85,13 +85,13 @@ class GoogleMaps extends _WidgetBase {
         if (this.contextObj) {
             this.subscribe({
                 callback: (guid: string) => this.fetchMapData(),
-                guid: this.contextObj.getGuid(),
+                guid: this.contextObj.getGuid()
             });
         } else {
             this.subscribe({
                 callback: (entity: string) => this.fetchMapData(),
                 entity: this.mapEntity,
-                guid: null,
+                guid: null
             });
         }
     }
@@ -123,7 +123,7 @@ class GoogleMaps extends _WidgetBase {
         mx.data.get({
             callback: (objects: mendix.lib.MxObject[]) => this.setDataAndUpdate(objects),
             error: () => { logger.debug("Error retrieving data"); }, // TODO: Add alert
-            xpath,
+            xpath
         });
     }
     private callMicroflow(microflow: string, guids?: string[],
@@ -134,7 +134,7 @@ class GoogleMaps extends _WidgetBase {
             params: {
                 actionname: microflow,
                 applyto: "selection",
-                guids,
+                guids
             },
             origin: this.mxform
         });

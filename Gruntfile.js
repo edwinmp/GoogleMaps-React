@@ -75,7 +75,7 @@ module.exports = function (grunt) {
         copy: {
             deployment: {
                 files: [
-                    {dest: "./test/deployment/web/widgets", cwd: "./src/", src: ["**/*"], expand: true}
+                    {dest: "./test/deployment/web/widgets", cwd: "./src/", src: ["com/mendix/widget/**/*"], expand: true}
                 ]
             },
             mpks: {
