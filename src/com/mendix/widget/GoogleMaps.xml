@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<widget id="GoogleMaps.widget.GoogleMaps" needsEntityContext="false"
+<widget id="com.mendix.widget.GoogleMaps.GoogleMaps" needsEntityContext="false"
     xmlns="http://www.mendix.com/widget/1.0/"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.mendix.com/widget/1.0/ ../../xsd/widget.xsd">
@@ -143,7 +143,6 @@
             <description>The latitude attribute.</description>
             <attributeTypes>
                 <attributeType name="Integer"/>
-                <attributeType name="Float"/>
                 <attributeType name="Decimal"/>
                 <attributeType name="String"/>
             </attributeTypes>
@@ -154,7 +153,6 @@
             <description>The longtitude attribute.</description>
             <attributeTypes>
                 <attributeType name="Integer"/>
-                <attributeType name="Float"/>
                 <attributeType name="Decimal"/>
                 <attributeType name="String"/>
             </attributeTypes>

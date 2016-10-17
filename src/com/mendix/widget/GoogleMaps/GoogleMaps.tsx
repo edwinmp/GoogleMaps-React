@@ -5,8 +5,8 @@ import * as domStyle from "dojo/dom-style";
 import * as mxLang from "mendix/lang";
 import * as _WidgetBase from  "mxui/widget/_WidgetBase";
 // tslint:disable-next-line
-import * as React from "GoogleMaps/lib/react";
-import ReactDOM = require("GoogleMaps/lib/react-dom");
+import * as React from "com/mendix/widget/GoogleMaps/lib/react";
+import ReactDOM = require("com/mendix/widget/GoogleMaps/lib/react-dom");
 
 // import components
 import Wrapper, { MapAppearance, MapBehaviour, MapTypeIds } from "./components/Wrapper";
@@ -174,13 +174,13 @@ export default class GoogleMaps extends _WidgetBase {
                 applyto: "selection",
                 guids,
             },
-            origin: this.mxform,
+            origin: this.mxform
         });
     }
 }
 
 /* tslint:disable:only-arrow-functions */
-let GoogleMapsWidget = dojoDeclare("GoogleMaps.widget.GoogleMaps", [_WidgetBase], (function(Source: any) {
+let GoogleMapsWidget = dojoDeclare("com.mendix.widget.GoogleMaps.GoogleMaps", [_WidgetBase], (function(Source: any) {
     let result: any = {};
     result.constructor = function() {
         logger.debug( this.id + ".constructor");

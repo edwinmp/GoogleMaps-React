@@ -1,7 +1,7 @@
 
 declare var logger: mendix.logger;
 
-import * as React from "GoogleMaps/lib/react";
+import * as React from "com/mendix/widget/GoogleMaps/lib/react";
 
 // import Utilities
 import { toCamelCase } from "../utils/utils";

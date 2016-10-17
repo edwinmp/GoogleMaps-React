@@ -1,5 +1,5 @@
 // import dependencies
-import * as React from "GoogleMaps/lib/react";
+import * as React from "com/mendix/widget/GoogleMaps/lib/react";
 
 // import components
 import {MapData} from "../GoogleMaps";

@@ -1,9 +1,9 @@
 
-declare module "GoogleMaps/lib/react-dom" {
+declare module "com/mendix/widget/GoogleMaps/lib/react-dom" {
     export = ReactDOM;
 }
 
-declare module "GoogleMaps/lib/react" {
+declare module "com/mendix/widget/GoogleMaps/lib/react" {
     export = React;
 }
 

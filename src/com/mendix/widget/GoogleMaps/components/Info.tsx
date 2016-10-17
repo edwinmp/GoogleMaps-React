@@ -1,4 +1,4 @@
-import * as React from "GoogleMaps/lib/react";
+import * as React from "com/mendix/widget/GoogleMaps/lib/react";
 
 interface InfoProps extends React.Props<Info> {
     classes: string;

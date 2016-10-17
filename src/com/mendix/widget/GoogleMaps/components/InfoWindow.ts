@@ -1,5 +1,5 @@
-import * as React from "GoogleMaps/lib/react";
-import ReactDOM = require("GoogleMaps/lib/react-dom");
+import * as React from "com/mendix/widget/GoogleMaps/lib/react";
+import ReactDOM = require("com/mendix/widget/GoogleMaps/lib/react-dom");
 
 interface InfoWindowProps extends React.Props<InfoWindow> {
     map: google.maps.Map;

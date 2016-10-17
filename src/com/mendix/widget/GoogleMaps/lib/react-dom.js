@@ -17,7 +17,7 @@
 
   // RequireJS
   } else if (typeof define === "function" && define.amd) {
-    define(["GoogleMaps/lib/react"], f);
+    define(["com/mendix/widget/GoogleMaps/lib/react"], f);
 
   // <script>
   } else {

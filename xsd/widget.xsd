@@ -84,7 +84,7 @@
       <xs:enumeration value="Currency"/>
       <xs:enumeration value="DateTime"/>
       <xs:enumeration value="Enum"/>
-      <xs:enumeration value="Float"/>
+      <xs:enumeration value="Decimal"/>
       <xs:enumeration value="HashString"/>
       <xs:enumeration value="Integer"/>
       <xs:enumeration value="Long"/>
@@ -132,7 +132,7 @@
       <xs:enumeration value="Void"/>
       <xs:enumeration value="Boolean"/>
       <xs:enumeration value="Integer"/>
-      <xs:enumeration value="Float"/>
+      <xs:enumeration value="Decimal"/>
       <xs:enumeration value="DateTime"/>
       <xs:enumeration value="String"/>
       <xs:enumeration value="Object"/>
