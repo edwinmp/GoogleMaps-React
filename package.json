@@ -32,9 +32,11 @@
   },
   "dependencies": {
     "@types/big.js": "0.0.31",
-    "@types/dojo": "^1.9.34",
+    "@types/dojo": "^1.9.35",
+    "@types/googlemaps": "^3.25.35",
     "@types/react": "^0.14.37",
     "@types/react-dom": "^0.14.17",
-    "grunt-xsltproc": "^0.6.1"
+    "grunt-xsltproc": "^0.6.1",
+    "mendix-client": "git+https://github.com/FlockOfBirds/Mendix-client-typing.git"
   }
 }
