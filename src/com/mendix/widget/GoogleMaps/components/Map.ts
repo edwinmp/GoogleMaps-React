@@ -49,7 +49,7 @@ export class Map extends Component<MapProps, MapState> {
     render() {
         const { div } = DOM;
         return (
-            div({ className: "google-map-container" },
+            div({ className: "google-map-container"  },
                 div({ className: "google-map", ref: (c) => this.mapRef = c }),
                 this.renderChildren()
             )

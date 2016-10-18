@@ -135,7 +135,7 @@ class GoogleMaps extends _WidgetBase {
                 applyto: "selection",
                 guids
             },
-            origin: this.mxform
+            origin: this.mxform // TODO: Update typings with mendix-client
         });
     }
 }

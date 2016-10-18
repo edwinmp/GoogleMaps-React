@@ -8,7 +8,7 @@ interface InfoWindowProps extends React.Props<InfoWindow> {
     visible?: boolean;
     onClose?: Function;
     onOpen?: Function;
-    widgetID: string;
+    widgetID?: string;
 }
 
 export class InfoWindow extends React.Component<InfoWindowProps, any> {
@@ -16,7 +16,7 @@ export class InfoWindow extends React.Component<InfoWindowProps, any> {
         map: null,
         marker: null,
         visible: false,
-        widgetID: "GoogleMaps",
+        widgetID: "GoogleMaps"
     };
     private infoWindow: google.maps.InfoWindow;
     private loggerNode: string;
