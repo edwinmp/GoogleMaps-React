@@ -1,19 +1,16 @@
-// import dependencies
-import * as React from "com/mendix/widget/GoogleMaps/lib/react";
+import { Component, Props, ReactElement, createElement } from "com/mendix/widget/GoogleMaps/lib/react";
 
-// import components
 import {MapData} from "../GoogleMaps";
 import Map, {MapProps} from "./Map";
-import Marker, {InfoWindowOptions} from "./Marker";
+import Marker, { MarkerProps } from "./Marker";
 
-export interface WrapperProps extends React.Props<Wrapper> {
+export interface WrapperProps extends Props<Wrapper> {
     apiKey: string;
-    data?: Array<MapData>;
+    data?: MapData[];
     height?: number;
     onClickMarker?: Function;
-    widgetID?: string;
+    widgetId?: string;
     width?: number;
-    apiAccessKey?: string;
     defaultLat?: number;
     defaultLng?: number;
     zoom?: number;
@@ -29,13 +26,13 @@ interface Alert {
 }
 export type MapTypeIds = "ROADMAP" | "HYBRID" | "SATELLITE" | "TERRAIN";
 
-export class Wrapper extends React.Component<WrapperProps, WrapperState> {
+export class Wrapper extends Component<WrapperProps, WrapperState> {
     public static defaultProps: WrapperProps = {
         apiKey: "",
         data: [],
         height: 0,
-        widgetID: "GoogleMaps",
-        width: 0,
+        widgetId: "GoogleMaps",
+        width: 0
     };
     private libraries: string[];
     private googleMapsApiBaseUrl: string;
@@ -44,7 +41,7 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
 
     public constructor(props: WrapperProps) {
         super(props);
-        this.loggerNode = this.props.widgetID + ".Wrapper";
+        this.loggerNode = this.props.widgetId + ".Wrapper";
         logger.debug(this.loggerNode + ".constructor");
         // instantiate class variables
         this.libraries = ["geometry", "places", "visualization", "places"];
@@ -59,13 +56,13 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
             this.google = null;
             this.state = {
                 alert: { hasAlert: false },
-                isScriptLoaded: false,
+                isScriptLoaded: false
             };
             this.loadGoogleScript(this.getGoogleMapsApiUrl(), this.onScriptLoaded, this.onScriptLoadingError);
         } else {
             this.state = {
                 alert: { hasAlert: false },
-                isScriptLoaded: true,
+                isScriptLoaded: true
             };
         }
     }
@@ -74,16 +71,11 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
         const props = this.props;
         const style = {
             height: props.height !== 0 ? props.height + "px" : "100%",
-            width: props.width !== 0 ? props.width + "px" : "auto",
+            width: props.width !== 0 ? props.width + "px" : "auto"
         };
-        return (
-            <div style={style} >
-                {this.alertDiv()}
-                {this.getContent()}
-            </div>
-        );
+        return createElement("div", { style }, this.alertDiv(), this.getContent());
     }
-    private getContent() {
+    private getContent(): ReactElement<any> {
         logger.debug(this.loggerNode + ".getContent");
         if (this.state.isScriptLoaded) {
             const props = this.props;
@@ -92,25 +84,14 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
                 google,
                 initialCenter: this.getInitialCenter(),
                 mapTypeId: this.getMapTypeId(props.defaultMapType),
-                widgetID: props.widgetID,
-                zoom: props.zoom,
+                widgetID: props.widgetId,
+                zoom: props.zoom
             };
-            return (
-                <Map {...mapProps} >
-                    <Marker
-                        widgetID={this.props.widgetID}
-                        onClick={this.props.onClickMarker}
-                    />
-                    {this.getMarkers(props.data)}
-                </Map>
-            );
+            const defaultMarker = createElement(Marker, { onClick: props.onClickMarker, widgetID: props.widgetId });
+            return createElement(Map, mapProps, defaultMarker, this.getMarkers(props.data));
         } else {
              // TODO: Make translatable
-            return (
-                <div>
-                    Loading ...
-                </div>
-            );
+            return createElement("div", null, "Loading ...");
         }
     }
     private getMapTypeId(mapTypeId: MapTypeIds) {
@@ -143,11 +124,7 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
         logger.debug(this.loggerNode + ".alertDiv");
         const alertState = this.state.alert;
         if (alertState && alertState.hasAlert) {
-            return (
-                <div className="alert-pane alert alert-danger">
-                    {alertState.alertText}
-                </div>
-            );
+            return createElement("div", { className: "alert-pane alert alert-danger" }, alertState.alertText);
         }
         return null;
     }
@@ -165,7 +142,7 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
             const hasAlert = this.state.alert.hasAlert;
             this.setState({
                 alert: { hasAlert: hasAlert ? false : hasAlert },
-                isScriptLoaded: true,
+                isScriptLoaded: true
             });
         }
     }
@@ -174,9 +151,9 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
         this.setState({
             alert: {
                 alertText: "Failed to load google maps script ... please check your internet connection",
-                hasAlert: true,
+                hasAlert: true
             },
-            isScriptLoaded: false,
+            isScriptLoaded: false
         });
     }
     private getMarkers(data: Array<MapData>) {
@@ -184,20 +161,14 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
             let key = 0;
             return data.map((location) => {
                 key++;
-                const position = new google.maps.LatLng(location.latitude, location.longitude);
-                const infoWindow: InfoWindowOptions = {content: location.info};
-                const onClickMarker = this.props.onClickMarker
-                    ? () => this.props.onClickMarker([location.guid])
-                    : null;
-                return (
-                    <Marker
-                        position={position}
-                        key={key}
-                        infoWindow={infoWindow}
-                        widgetID={this.props.widgetID}
-                        onClick={onClickMarker}
-                    />
-                );
+                const markerProps: MarkerProps = {
+                    infoWindow: { content: location.info },
+                    key,
+                    onClick: this.props.onClickMarker ? () => this.props.onClickMarker([location.guid]) : null,
+                    position: new google.maps.LatLng(location.latitude, location.longitude),
+                    widgetID: this.props.widgetId
+                };
+                return createElement(Marker, markerProps);
             });
         }
     }
@@ -209,4 +180,4 @@ export class Wrapper extends React.Component<WrapperProps, WrapperState> {
         }
         return new google.maps.LatLng(props.defaultLat, props.defaultLng);
     }
-};
+}
