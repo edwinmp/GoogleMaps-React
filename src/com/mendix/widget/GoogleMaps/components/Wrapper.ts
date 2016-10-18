@@ -27,47 +27,28 @@ interface Alert {
 export type MapTypeIds = "ROADMAP" | "HYBRID" | "SATELLITE" | "TERRAIN";
 
 export class Wrapper extends Component<WrapperProps, WrapperState> {
-    public static defaultProps: WrapperProps = {
+    static defaultProps: WrapperProps = {
         apiKey: "",
         data: [],
         height: 0,
-        widgetId: "GoogleMaps",
         width: 0
     };
-    private libraries: string[];
-    private googleMapsApiBaseUrl: string;
-    private google: Object;
-    private loggerNode: string;
 
-    public constructor(props: WrapperProps) {
+    constructor(props: WrapperProps) {
         super(props);
-        this.loggerNode = this.props.widgetId + ".Wrapper";
-        logger.debug(this.loggerNode + ".constructor");
-        // instantiate class variables
-        this.libraries = ["geometry", "places", "visualization", "places"];
-        this.googleMapsApiBaseUrl = "https://maps.googleapis.com/maps/api/js";
-        // bind context
         this.getGoogleMapsApiUrl = this.getGoogleMapsApiUrl.bind(this);
-        this.onScriptLoaded = this.onScriptLoaded.bind(this);
-        this.onScriptLoadingError = this.onScriptLoadingError.bind(this);
+        this.handleScriptLoading = this.handleScriptLoading.bind(this);
         this.alertDiv = this.alertDiv.bind(this);
 
+        this.state = {
+            alert: { hasAlert: false },
+            isScriptLoaded: typeof google !== "undefined" ? true : false
+        };
         if (typeof google === "undefined") {
-            this.google = null;
-            this.state = {
-                alert: { hasAlert: false },
-                isScriptLoaded: false
-            };
-            this.loadGoogleScript(this.getGoogleMapsApiUrl(), this.onScriptLoaded, this.onScriptLoadingError);
-        } else {
-            this.state = {
-                alert: { hasAlert: false },
-                isScriptLoaded: true
-            };
+            this.loadGoogleScript(this.getGoogleMapsApiUrl(), this.handleScriptLoading);
         }
     }
-    public render() {
-        logger.debug(this.loggerNode + ".render");
+    render() {
         const props = this.props;
         const style = {
             height: props.height !== 0 ? props.height + "px" : "100%",
@@ -76,12 +57,11 @@ export class Wrapper extends Component<WrapperProps, WrapperState> {
         return createElement("div", { style }, this.alertDiv(), this.getContent());
     }
     private getContent(): ReactElement<any> {
-        logger.debug(this.loggerNode + ".getContent");
         if (this.state.isScriptLoaded) {
             const props = this.props;
             const mapProps: MapProps = {
                 centerAroundCurrentLocation: false,
-                google,
+                google: typeof google !== "undefined" ? google : null,
                 initialCenter: this.getInitialCenter(),
                 mapTypeId: this.getMapTypeId(props.defaultMapType),
                 widgetID: props.widgetId,
@@ -90,38 +70,23 @@ export class Wrapper extends Component<WrapperProps, WrapperState> {
             const defaultMarker = createElement(Marker, { onClick: props.onClickMarker, widgetID: props.widgetId });
             return createElement(Map, mapProps, defaultMarker, this.getMarkers(props.data));
         } else {
-             // TODO: Make translatable
-            return createElement("div", null, "Loading ...");
+            return createElement("div", null, "Loading ..."); // TODO: Make translatable
         }
     }
     private getMapTypeId(mapTypeId: MapTypeIds) {
-        if (mapTypeId === "ROADMAP") {
-            return google.maps.MapTypeId.ROADMAP;
-        }
-        if (mapTypeId === "HYBRID") {
-            return google.maps.MapTypeId.HYBRID;
-        }
-        if (mapTypeId === "SATELLITE") {
-            return google.maps.MapTypeId.SATELLITE;
-        }
-        if (mapTypeId === "TERRAIN") {
-            return google.maps.MapTypeId.TERRAIN;
-        }
+        if (mapTypeId === "ROADMAP") { return google.maps.MapTypeId.ROADMAP; }
+        if (mapTypeId === "HYBRID") { return google.maps.MapTypeId.HYBRID; }
+        if (mapTypeId === "SATELLITE") { return google.maps.MapTypeId.SATELLITE; }
+        if (mapTypeId === "TERRAIN") { return google.maps.MapTypeId.TERRAIN; }
     }
-    private loadGoogleScript(src: string, onLoad: Function, onError: Function) {
+    private loadGoogleScript(src: string, callback: Function) {
         const script = document.createElement("script");
         script.src = src;
-        script.onload = () => onLoad();
-        script.onerror = () => onError();
+        script.onload = () => callback();
+        script.onerror = () => callback();
         document.body.appendChild(script);
     };
-    /**
-     * Creates an alert
-     * TODO: Consider making this a component with option to support other alert classes
-     * 
-     */
     private alertDiv() {
-        logger.debug(this.loggerNode + ".alertDiv");
         const alertState = this.state.alert;
         if (alertState && alertState.hasAlert) {
             return createElement("div", { className: "alert-pane alert alert-danger" }, alertState.alertText);
@@ -129,31 +94,18 @@ export class Wrapper extends Component<WrapperProps, WrapperState> {
         return null;
     }
     private getGoogleMapsApiUrl() {
-        return this.googleMapsApiBaseUrl +
-               "?key=" +
-               this.props.apiKey +
-               "&libraries=" +
-               this.libraries.join();
+        return "https://maps.googleapis.com/maps/api/js?key=" +
+               this.props.apiKey + "&libraries=" +
+               ["geometry", "places", "visualization", "places"].join();
     }
-    private onScriptLoaded() {
-        logger.debug(this.loggerNode + ".onScriptLoaded");
-        if (!this.state.isScriptLoaded && google) {
-            this.google = google;
-            const hasAlert = this.state.alert.hasAlert;
-            this.setState({
-                alert: { hasAlert: hasAlert ? false : hasAlert },
-                isScriptLoaded: true
-            });
-        }
-    }
-    private onScriptLoadingError() {
-        logger.debug(this.loggerNode + ".onScriptLoadingError");
+    private handleScriptLoading() {
+        const isScriptLoaded = typeof google !== "undefined";
         this.setState({
             alert: {
-                alertText: "Failed to load google maps script ... please check your internet connection",
-                hasAlert: true
+                alertText: isScriptLoaded ? "" : "Failed to load script ... please check your internet connection",
+                hasAlert: !isScriptLoaded
             },
-            isScriptLoaded: false
+            isScriptLoaded
         });
     }
     private getMarkers(data: Array<MapData>) {

@@ -7,7 +7,7 @@ import InfoWindow from "./InfoWindow";
 
 // const eventNames = ["click", "mouseover", "recenter"];
 
-interface MarkerProps extends React.Props<Marker> {
+export interface MarkerProps extends React.Props<Marker> {
     map?: google.maps.Map;
     position?: google.maps.LatLng;
     google?: Object;
