@@ -5,8 +5,6 @@ import * as DojoDeferred from "dojo/Deferred";
 import Info from "./Info";
 import InfoWindow from "./InfoWindow";
 
-// const eventNames = ["click", "mouseover", "recenter"];
-
 export interface MarkerProps extends React.Props<Marker> {
     map?: google.maps.Map;
     position?: google.maps.LatLng;
@@ -14,7 +12,7 @@ export interface MarkerProps extends React.Props<Marker> {
     mapCenter?: google.maps.LatLng;
     icon?: string;
     infoWindow?: InfoWindowOptions;
-    widgetID: string;
+    widgetID?: string;
     onClick?: Function;
     [key: string]: any;
 }

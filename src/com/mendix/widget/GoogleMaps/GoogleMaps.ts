@@ -73,7 +73,6 @@ class GoogleMaps extends _WidgetBase {
             defaultMapType: this.defaultMapType,
             height: this.mapHeight,
             onClickMarker,
-            widgetId: this.id,
             width: this.mapWidth,
             zoom: this.zoom
         };

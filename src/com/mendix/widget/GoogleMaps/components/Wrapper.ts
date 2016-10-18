@@ -1,7 +1,7 @@
 import { Component, Props, ReactElement, createElement } from "com/mendix/widget/GoogleMaps/lib/react";
 
 import {MapData} from "../GoogleMaps";
-import Map, {MapProps} from "./Map";
+import {Map, MapProps} from "./Map";
 import Marker, { MarkerProps } from "./Marker";
 
 export interface WrapperProps extends Props<Wrapper> {
@@ -9,7 +9,6 @@ export interface WrapperProps extends Props<Wrapper> {
     data?: MapData[];
     height?: number;
     onClickMarker?: Function;
-    widgetId?: string;
     width?: number;
     defaultLat?: number;
     defaultLng?: number;
@@ -60,14 +59,13 @@ export class Wrapper extends Component<WrapperProps, WrapperState> {
         if (this.state.isScriptLoaded) {
             const props = this.props;
             const mapProps: MapProps = {
+                center: this.getInitialCenter(),
                 centerAroundCurrentLocation: false,
                 google: typeof google !== "undefined" ? google : null,
-                initialCenter: this.getInitialCenter(),
                 mapTypeId: this.getMapTypeId(props.defaultMapType),
-                widgetID: props.widgetId,
                 zoom: props.zoom
             };
-            const defaultMarker = createElement(Marker, { onClick: props.onClickMarker, widgetID: props.widgetId });
+            const defaultMarker = createElement(Marker, { onClick: props.onClickMarker });
             return createElement(Map, mapProps, defaultMarker, this.getMarkers(props.data));
         } else {
             return createElement("div", null, "Loading ..."); // TODO: Make translatable
@@ -117,8 +115,7 @@ export class Wrapper extends Component<WrapperProps, WrapperState> {
                     infoWindow: { content: location.info },
                     key,
                     onClick: this.props.onClickMarker ? () => this.props.onClickMarker([location.guid]) : null,
-                    position: new google.maps.LatLng(location.latitude, location.longitude),
-                    widgetID: this.props.widgetId
+                    position: new google.maps.LatLng(location.latitude, location.longitude)
                 };
                 return createElement(Marker, markerProps);
             });
