@@ -22,7 +22,7 @@ var path = require("path"),
     currentFolder = shelljs.pwd().toString();
 
 var TEST_PATH = path.join(currentFolder, "/test/Test.mpr");
-var WIDGET_XML = path.join(currentFolder, "/src/", pkg.name, "/", pkg.name + ".xml");
+var WIDGET_XML = path.join(currentFolder, "/src/com/mendix/", pkg.name + ".xml");
 var PACKAGE_XML = path.join(currentFolder, "/src/package.xml");
 var TEST_WIDGETS_FOLDER = path.join(currentFolder, "./test/widgets");
 var TEST_WIDGETS_DEPLOYMENT_FOLDER = path.join(currentFolder, "./test/deployment/web/widgets");
@@ -34,7 +34,7 @@ module.exports = function (grunt) {
         name: pkg.name,
         watch: {
             autoDeployUpdate: {
-                "files": ["./src/**/*", "!./src/**/*.ts", "!./src/**/*.tsx",  "!./src/**/*.map"],
+                "files": ["./src/com/mendix/widget/**/*", "!./src/com/mendix/widget/**/*.ts", "!./src/com/mendix/widget/**/*.tsx",  "!./src/com/mendix/widget/**/*.map"],
                 "tasks": ["compress:makezip", "copy:deployment", "copy:mpks"],
                 options: {
                     debounceDelay: 250,
@@ -75,7 +75,7 @@ module.exports = function (grunt) {
         copy: {
             deployment: {
                 files: [
-                    {dest: "./test/deployment/web/widgets", cwd: "./src/", src: ["**/*"], expand: true}
+                    {dest: "./test/deployment/web/widgets", cwd: "./src/", src: ["com/mendix/widget/**/*"], expand: true}
                 ]
             },
             mpks: {
